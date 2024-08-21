@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {%load static%}
+    <link rel="stylesheet" href="{% static 'quizz/style.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'quizz/script.js' %}"></script>
+    <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
+    <meta charset="UTF-8">
+    <title>LimeHugFun</title>
+    <style>
+        /* Style pour le popup de succès (vert) */
+        .popup.success {
+            background-color: green;
+            color: white;
+        }
+
+        /* Style pour le popup d'erreur (rouge) */
+        .popup.error {
+            background-color: red;
+            color: white;
+        }
+
+        /* Autres styles pour le popup*/
+        .popup {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            text-align: center;
+            /*display: none;*/
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+            $(document).ready(function() {
+            // Afficher le popup pendant 3 secondes
+            $('#popup').fadeIn(1000).delay(3000).fadeOut(1000);
+        });
+    </script>
+</head>
+
+<body>
+    <header class="bg-dark text-light py-4">
+        <div class="container">
+            <h1 class="mb-0">Ravision</h1>
+        </div>
+    </header>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'subjects' %}">Matières</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'import_excel' %}">Importer</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'quizzes' %}">Parties en cours</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+
+
+    <main class="container mt-4">
+        {% if messages %}
+        {% for message in messages %}
+        <div id="popup" class="popup {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+
+</html>

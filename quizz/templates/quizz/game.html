@@ -1,0 +1,22 @@
+{% extends 'quizz/base.html' %}
+{% block content %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("answer").focus();
+    });
+</script>
+
+<h2>Quizz : {{quizz.name}}</h2>
+<p>Nombre de questions restantes : {{ count }}</p>
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="question_id" value="{{ question.id }}">
+    <strong>{{ question.lecture.subject.name }}<br/>
+    {{ question.lecture.name }}</strong><br/><br/>
+    {{ question.question }}<br />
+    {% if quizz.hints %} Hint : {{ hint }}<br /> {% endif %}
+    <input type="text" id="answer" name="answer" size="60"><br /><br />
+    <button type="submit" class="btn btn-primary" name="action" value="attempt">Soumettre la réponse</button>
+</form>
+{% endblock %}

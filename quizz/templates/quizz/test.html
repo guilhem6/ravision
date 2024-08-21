@@ -1,0 +1,11 @@
+{% extends 'quizz/base.html' %}
+{% block content %}
+
+<h2>Tentative {{object.id}} ({{parent.question}})</h2>
+
+<h4>Correct : {{object.as_dict.correct}}</h4>
+<h4>Avec indices : {{object.as_dict.hints}}</h4>
+
+{% include 'quizz/object.html' %}
+
+{% endblock %}

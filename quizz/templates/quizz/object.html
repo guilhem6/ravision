@@ -1,0 +1,272 @@
+{% block content %}
+<div id="chart-container">
+{% if chart %}
+
+{% include 'quizz/graph.html' %}
+<form method="get" id="score-form">
+    <!-- Pourcentage -->
+    <input type="hidden" name="percentage" value="0">
+    <label for="percentage" id="label-percentage" class="btn label {% if request.GET.percentage in defaultvis %}label-white{% else %}label-grey{% endif %}">
+        Afficher en pourcentage</label>
+    <input type="checkbox" id="percentage" name="percentage" value="1"
+        {% if request.GET.percentage in defaultvis %}checked{% endif %}
+        onchange="submitFormAjax();toggleLabelColor('#label-percentage','label-white');">
+    <br />
+
+    <!-- Bonnes réponses sans indice -->
+    <input type="hidden" name="show_correct_without_hint" value="0">
+    <label for="show_correct_without_hint" id="label-cwo" class="btn label {% if request.GET.show_correct_without_hint in defaultvis %}label-navy{% else %}label-grey{% endif %}">Bonnes réponses sans indice</label>
+    <input type="checkbox" id="show_correct_without_hint" name="show_correct_without_hint" value="1"
+        {% if request.GET.show_correct_without_hint in defaultvis %}checked{% endif %}
+        onchange="submitFormAjax();toggleLabelColor('#label-cwo','label-navy');">
+    <br />
+
+    <!-- Bonnes réponses avec indice -->
+    <input type="hidden" name="show_correct_with_hint" value="0">
+    <label for="show_correct_with_hint" id="label-cwi" class="btn label {% if request.GET.show_correct_with_hint in defaultvis %}label-blue{% else %}label-grey{% endif %}">Bonnes réponses avec indice</label>
+    <input type="checkbox" id="show_correct_with_hint" name="show_correct_with_hint" value="1"
+        {% if request.GET.show_correct_with_hint in defaultvis %}checked{% endif %}
+        onchange="submitFormAjax();toggleLabelColor('#label-cwi','label-blue');">
+    <br />
+
+    <!-- Mauvaises réponses sans indice -->
+    <input type="hidden" name="show_incorrect_without_hint" value="0">
+    <label for="show_incorrect_without_hint" id="label-iwo" class="btn label {% if request.GET.show_incorrect_without_hint in defaultvis %}label-red{% else %}label-grey{% endif %}">Mauvaises réponses sans indice</label>
+    <input type="checkbox" id="show_incorrect_without_hint" name="show_incorrect_without_hint" value="1"
+        {% if request.GET.show_incorrect_without_hint in defaultvis %}checked{% endif %}
+        onchange="submitFormAjax();toggleLabelColor('#label-iwo','label-red');">
+    <br />
+
+    <!-- Mauvaises réponses avec indice -->
+    <input type="hidden" name="show_incorrect_with_hint" value="0">
+    <label for="show_incorrect_with_hint" id="label-iwi" class="btn label {% if request.GET.show_incorrect_with_hint in defaultvis %}label-orange{% else %}label-grey{% endif %}">Mauvaises réponses avec indice</label>
+    <input type="checkbox" id="show_incorrect_with_hint" name="show_incorrect_with_hint" value="1"
+        {% if request.GET.show_incorrect_with_hint in defaultvis %}checked{% endif %}
+        onchange="submitFormAjax();toggleLabelColor('#label-iwi','label-orange');">
+</form>
+</div>
+
+<style>
+        .label{
+        color:white;
+        display: inline-block;
+        width: 250px; /* Largeur fixe pour tous les labels */
+        padding: 10px;
+        margin-bottom: 10px;
+        text-align: left;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+        .label-white {
+        background-color: black;
+    } 
+    .label-red {
+        background-color: red;
+    }
+    .label-orange {
+        background-color: orange;
+    }
+    .label-navy {
+        background-color: navy;
+    }
+    
+    .label-blue {
+        background-color: blue;
+    }
+    
+    .label-grey {
+        background-color: grey;
+    }
+</style>
+
+
+{% endif %}
+
+{% if urls.game %}
+    <br />
+    <form method="post" action="{% if quizz%}{% url urls.game object.id%}{%elif object %}{% url urls.game urls.action object.id%}{% else %}{% url urls.game urls.action 0 %}{% endif %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success" name="action" value="play">Jouer</button>
+    </form>
+{% endif %}
+
+{% if forms.filter %}
+<br />
+<div class="accordion" id="filterAccordion2">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="filterHeading2">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse2" aria-expanded="true" aria-controls="filterCollapse2">
+                Filtres
+            </button>
+        </h2>
+        <div id="filterCollapse2" class="accordion-collapse collapse" aria-labelledby="filterHeading2" data-bs-parent="#filterAccordion2">
+            <div class="accordion-body">
+                <form method="GET" action="{% if object.id %}{% url urls.action id=object.id%}{% else %}{% url urls.action %}{% endif %}">
+                    <table class="table">
+                        <tbody>
+                            {% for field in forms.filter %}
+                            <tr>
+                                <th>{{ field.label_tag }}</th>
+                                <td>{{ field }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <th></th>
+                                <td>
+                                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+<br />
+
+
+<div class="accordion" id="filterAccordion3">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="filterHeading3">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse3" aria-expanded="true" aria-controls="filterCollapse3">
+                Autres actions
+            </button>
+        </h2>
+        <div id="filterCollapse3" class="accordion-collapse collapse" aria-labelledby="filterHeading3" data-bs-parent="#filterAccordion3">
+            <div class="accordion-body">
+
+                {% if forms.update %}
+                <h4>Mettre à jour</h4>
+                <table class="table">
+                    <tbody>
+                        <form method="POST">
+                            {% csrf_token %}
+                            {% for field in forms.update %}
+                            <tr>
+                                <th>{{ field.label_tag }}</th>
+                                <td>{{ field }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <th></th>
+                                <td>
+                                    <button type="submit" class="btn btn-primary" name="action" value="update">Mettre à jour</button>
+                                </td>
+                            </tr>
+                        </form>
+                    </tbody>
+                </table>
+                {% endif %}
+                {% if forms.add %}
+                <h4>Ajouter un nouvel élément</h4>
+                <table class="table">
+                    <tbody>
+                        <form method="POST">
+                            {% csrf_token %}
+                            {% for field in forms.add %}
+                            <tr>
+                                <th>{{ field.label_tag }}</th>
+                                <td>{{ field }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <th></th>
+                                <td>
+                                    <button type="submit" class="btn btn-primary" name="action" value="add">Ajouter</button>
+                                </td>
+                            </tr>
+                        </form>
+                    </tbody>
+                </table>
+                {% endif %}
+
+                {%if urls.delete %}
+
+                <form method="post" action="{% url urls.delete object.id %}" id="deleteForm">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" name="action" value="delete" onclick="return confirmDelete()">Supprimer</button>
+                </form>
+                <br />
+                {% endif %}
+                {% if urls.parent %}
+                    <form method="post" action="{% if parent %} {% url urls.parent parent.id %}{% else %}{% url urls.parent %}{% endif %}">
+                {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary" name="action" value="back">Retour</button>
+                </form>
+                <br />
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+
+<table class="table">
+    <thead>
+        <tr>
+            {% for field, label in fields.items %}
+            <th>
+                <a style="text-decoration:none" href="?sort_by={{ field }}&order={% if sort_by == field %}{% if order == 'desc' %}asc{% else %}desc{% endif %}{% else %}asc{% endif %}&children_per_page={{children_per_page}}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-down{% if sort_by == field %} {% if order == 'desc' %}rotate180{% endif %}{% endif %}" viewBox="0 0 16 16">
+                        <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
+                    </svg>
+                 {{ label }}</a>
+            </th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for object in children %}
+        <tr class="object-row" data-url="{% url urls.child id=object.id%}">
+            {% for key, value in object.as_dict.items %}
+            <td>{{ value|default:"<span style='color: darkred;font-weight: bold;'>INCONNU</span>" }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<!-- Affichage des boutons de pagination -->
+{% if children %}
+<div class="pagination">
+    <span class="step-links">
+        {% if children.has_previous %}
+            <a href="?page=1{% if forms.filter.is_bound %}&{{ forms.filter.as_url }}{% endif %}{% if children_per_page %}&children_per_page={{ children_per_page }}{% endif %}&sort_by={{sort_by}}&order={{order}}" class="btn btn-secondary">&laquo; Première</a>
+            <a href="?page={{ children.previous_page_number }}{% if forms.filter.is_bound %}&{{ forms.filter.as_url }}{% endif %}{% if children_per_page %}&children_per_page={{ children_per_page }}{% endif %}&sort_by={{sort_by}}&order={{order}}" class="btn btn-secondary">Précédente</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ children.number }} sur {{ children.paginator.num_pages }}
+        </span>
+
+        {% if children.has_next %}
+            <a href="?page={{ children.next_page_number }}{% if forms.filter.is_bound %}&{{ forms.filter.as_url }}{% endif %}{% if children_per_page %}&children_per_page={{ children_per_page }}{% endif %}&sort_by={{sort_by}}&order={{order}}" class="btn btn-secondary">Suivante</a>
+            <a href="?page={{ children.paginator.num_pages }}{% if forms.filter.is_bound %}&{{ forms.filter.as_url }}{% endif %}{% if children_per_page %}&children_per_page={{ children_per_page }}{% endif %}&sort_by={{sort_by}}&order={{order}}" class="btn btn-secondary">Dernière &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+<br />
+
+<form method="get" action="{% if object.id %}{% url urls.action id=object.id%}{% else %}{% url urls.action %}{% endif %}">
+    <label for="children_per_page">Eléments par page :</label>
+    <select name="children_per_page" id="children_per_page">
+        {% for option in amounts_of_children %}
+            <option value="{{ option }}" {% if children_per_page == option %} selected {% endif %}>{{ option }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">Appliquer</button>
+</form>
+
+
+<br />
+{% endif %}
+
+{% endblock %}

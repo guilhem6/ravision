@@ -1,0 +1,37 @@
+{% extends 'quizz/base.html' %}
+{% block content %}
+<!--Type de quizz : {{quizz_type}}<br />
+{% if quizz_type == 'subject' %}
+    Nom de la matière : {{ title }}<br />
+{% elif quizz_type == 'lecture' %}
+    Nom du chapitre : {{ title }}<br />
+{% elif quizz_type == 'question' %}
+    Nom de la question : {{ title }}<br />
+{% endif %}-->
+<form method="post">
+    {% csrf_token %}
+    <table class="table">
+        <tbody>
+            {% for field in form %}
+            <tr>
+                <th>{{ field.label_tag }}</th>
+                <td>{{ field }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th></th>
+                <td>
+                    <button type="submit" name="action" value="save" class="btn btn-secondary">Créer</button>
+                </td>
+            </tr>
+            <tr>
+                <th></th>
+                <td>
+                    <button type="submit" name="action" value="save_and_play" class="btn btn-primary">Créer et jouer</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</form>
+
+{% endblock %}
