@@ -1,7 +1,7 @@
 <div id="graph-container">
     <!-- Conteneur de l'image avec le bandeau de chargement -->
     <div class="image-container position-relative">
-        {%if chart %}<img src="data:image/png;base64, {{chart|safe}}" class="img-fluid">{% endif %}
+        {%if chart %}<img src="data:image/png;base64, {{chart|safe}}" class="img-fluid" />{% endif %}
         <!-- Bandeau de chargement -->
         <div id="loading-overlay" class="overlay d-none">
             <div class="spinner-border text-primary" role="status">

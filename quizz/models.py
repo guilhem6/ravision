@@ -1,11 +1,11 @@
 from django.db import models
-#from django.contrib.auth.models import User
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Subject(models.Model):
     name = models.CharField(max_length = 255,default="")
     short_name = models.CharField(max_length = 3,default="",unique=True)
-    #user = models.ForeignKey(User, on_delete=models.CASCADE)
+    #user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     def __str__(self):
         return self.name
     def as_dict(self):
@@ -22,9 +22,7 @@ class Lecture(models.Model):
     def __str__(self):
         return self.name
     def as_dict(self):
-        return {
-            'name': self.name,
-        }
+        return {'name': self.name,}
     
 class Question(models.Model):
     answer = models.CharField(max_length = 255,default="")
@@ -35,8 +33,7 @@ class Question(models.Model):
     def as_dict(self):
         return {
             'question': self.question,
-            'answer': self.answer,
-        }
+            'answer': self.answer,}
 
 class Test(models.Model):
     date = models.DateField(null=True, default=None, blank=True)
@@ -72,7 +69,7 @@ class Quizz(models.Model):
     mode = models.ForeignKey(QuizzMode, on_delete=models.CASCADE, default=1)
     hints = models.BooleanField(default=True)
     current_question = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, default=None, related_name='current_question')
-    #user = models.ForeignKey(User, on_delete=models.CASCADE)
+    #user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     def __str__(self):
         return self.name + str(self.id)
     def as_dict(self):
