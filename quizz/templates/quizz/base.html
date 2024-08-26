@@ -55,14 +55,29 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <ul class="navbar-nav">
+                {% if user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'subjects' %}">Matières</a>
+                    <a class="nav-link" href="{% url 'subjects' %}">Mes matières</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'import_excel' %}">Importer</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'quizzes' %}">Parties en cours</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'account' %}">Mon compte</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Connexion</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'register' %}">Créer un compte</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'subjects' %}">Catalogue</a>
                 </li>
             </ul>
         </div>

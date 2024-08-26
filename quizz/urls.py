@@ -19,4 +19,8 @@ urlpatterns = [
     path('game_end/', views.game_end, name='game_end'),
     path('quizzes/', views.quizzes, name='quizzes'),
     path('quizz/<int:id>/', views.quizz, name='quizz'),
+    path('register/', views.register, name='register'),
+    path('login/', views.user_login, name='login'),
+    path('logout/', views.user_logout, name='logout'),
+    path('account/', views.user_account, name='account'),
 ]

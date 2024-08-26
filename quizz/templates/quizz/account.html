@@ -1,0 +1,13 @@
+{% extends 'quizz/base.html' %}
+
+
+{% block content %}
+<h2>Mon compte</h2>
+<p>Identifiant : {{ user.username }}</p>
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary" name="action" value="logout">Me déconnecter</button>
+    <br /><br />
+    <button type="submit" class="btn btn-danger" name="action" value="delete" onclick="return confirmDelete()">Supprimer mon compte</button>
+</form>
+{% endblock %}

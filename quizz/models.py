@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class Subject(models.Model):
+    private = models.BooleanField(default=False)
     name = models.CharField(max_length = 255,default="")
     short_name = models.CharField(max_length = 3,default="",unique=True)
     #user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
@@ -69,7 +70,7 @@ class Quizz(models.Model):
     mode = models.ForeignKey(QuizzMode, on_delete=models.CASCADE, default=1)
     hints = models.BooleanField(default=True)
     current_question = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, default=None, related_name='current_question')
-    #user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+    private = models.BooleanField(default=False)
     def __str__(self):
         return self.name + str(self.id)
     def as_dict(self):

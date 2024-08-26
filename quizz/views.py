@@ -6,6 +6,8 @@ from .tasks import import_task
 import random
 from .utils import *
 from django.utils import timezone
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 # Create your views here.
 def index(request):
@@ -305,3 +307,50 @@ def quizz(request,id):
                 message_modification(request,quizz.name)
     context = prepare_render_context(None, request=request, object=quizz, deleteurl='delete_quizz', updateForm=updateForm, parenturl='quizzes', gameurl='game', quizz=True)
     return render(request, 'quizz/quizz.html', context)
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, f"Bienvenue, {user.username}")
+            return redirect('subjects')  # Redirige vers le tableau de bord après inscription
+    else:
+        form = UserCreationForm()
+    return render(request, 'quizz/register.html', {'form': form})
+
+def user_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('subjects')  # Redirige vers le tableau de bord après connexion
+    else:
+        form = AuthenticationForm()
+    return render(request, 'quizz/login.html', {'form': form})
+
+def user_logout(request):
+    logout(request)
+    return redirect('login')  # Redirige vers la page de connexion après déconnexion
+
+def user_account(request):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'logout':
+            logout(request)
+            messages.success(request, "Vous avez été déconnecté.")
+            return redirect('login')  # Redirige vers la page de connexion après déconnexion
+        
+        elif action == 'delete':
+            user = request.user
+            user.delete()  # Supprime le compte utilisateur
+            messages.success(request, "Votre compte a été supprimé avec succès.")
+            return redirect('register')  # Redirige vers la page d'inscription après suppression du compte
+    
+    return render(request, 'quizz/account.html')
