@@ -1,7 +1,7 @@
 {% extends 'quizz/base.html' %}
 {% block content %}
 
-<h2>Tentative {{object.id}} ({{parent.question}})</h2>
+<h2><i class="bi bi-check-square"></i>Tentative {{object.id}} ({{parent.question}})</h2>
 
 <h4>Correct : {{object.as_dict.correct}}</h4>
 <h4>Avec indices : {{object.as_dict.hints}}</h4>

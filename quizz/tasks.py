@@ -1,22 +1,21 @@
 from celery import shared_task
 from celery_progress.backend import ProgressRecorder
-from .models import Subject, Lecture, Question
+from .models import Subject, Lecture, Question, User
 import os
 import pandas as pd
 from io import BytesIO
 
 
 @shared_task(bind=True)
-def import_task(self,name,short_name, file_content):
+def import_task(self,name,short_name, user_id,file_content):
     progress_recorder = ProgressRecorder(self)
-
-    #print(short_name)
+    user = User.objects.get(id=user_id)
     # Vérifier si un sujet avec le short_name existe déjà
     try:
         subject = Subject.objects.get(short_name=short_name)
     except Subject.DoesNotExist:
         # Créer un nouveau sujet s'il n'existe pas encore
-        subject = Subject.objects.create(name=name, short_name=short_name)
+        subject = Subject.objects.create(name=name, short_name=short_name,user=user)
     # Utilisation de pandas pour lire les feuilles du fichier Excel
     xls = pd.ExcelFile(BytesIO(file_content), engine='openpyxl')
     sheets = xls.sheet_names

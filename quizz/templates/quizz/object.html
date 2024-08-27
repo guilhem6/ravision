@@ -89,7 +89,7 @@
     <br />
     <form method="post" action="{% if quizz%}{% url urls.game object.id%}{%elif object %}{% url urls.game urls.action object.id%}{% else %}{% url urls.game urls.action 0 %}{% endif %}">
         {% csrf_token %}
-        <button type="submit" class="btn btn-success" name="action" value="play">Jouer</button>
+        <button type="submit" class="btn btn-success" name="action" value="play"><i class="bi bi-play-fill"></i> Jouer</button>
     </form>
 {% endif %}
 
@@ -99,7 +99,7 @@
     <div class="accordion-item">
         <h2 class="accordion-header" id="filterHeading2">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse2" aria-expanded="true" aria-controls="filterCollapse2">
-                Filtres
+                <i class="bi bi-funnel"></i>&nbsp;Filtres
             </button>
         </h2>
         <div id="filterCollapse2" class="accordion-collapse collapse" aria-labelledby="filterHeading2" data-bs-parent="#filterAccordion2">
@@ -116,7 +116,7 @@
                             <tr>
                                 <th></th>
                                 <td>
-                                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel-fill"></i> Filtrer</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -134,14 +134,14 @@
     <div class="accordion-item">
         <h2 class="accordion-header" id="filterHeading3">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse3" aria-expanded="true" aria-controls="filterCollapse3">
-                Autres actions
+                <i class="bi bi-justify-left"></i>&nbsp;Autres actions
             </button>
         </h2>
         <div id="filterCollapse3" class="accordion-collapse collapse" aria-labelledby="filterHeading3" data-bs-parent="#filterAccordion3">
             <div class="accordion-body">
 
                 {% if forms.update %}
-                <h4>Mettre à jour</h4>
+                <h4><i class="bi bi-arrow-repeat"></i> Mettre à jour</h4>
                 <table class="table">
                     <tbody>
                         <form method="POST">
@@ -155,7 +155,7 @@
                             <tr>
                                 <th></th>
                                 <td>
-                                    <button type="submit" class="btn btn-primary" name="action" value="update">Mettre à jour</button>
+                                    <button type="submit" class="btn btn-primary" name="action" value="update"><i class="bi bi-arrow-repeat"></i> Mettre à jour</button>
                                 </td>
                             </tr>
                         </form>
@@ -163,7 +163,7 @@
                 </table>
                 {% endif %}
                 {% if forms.add %}
-                <h4>Ajouter un nouvel élément</h4>
+                <h4><i class="bi bi-plus-circle"></i> Ajouter un nouvel élément</h4>
                 <table class="table">
                     <tbody>
                         <form method="POST">
@@ -177,7 +177,7 @@
                             <tr>
                                 <th></th>
                                 <td>
-                                    <button type="submit" class="btn btn-primary" name="action" value="add">Ajouter</button>
+                                    <button type="submit" class="btn btn-primary" name="action" value="add"><i class="bi bi-plus-circle-fill"></i> Ajouter</button>
                                 </td>
                             </tr>
                         </form>
@@ -189,14 +189,14 @@
 
                 <form method="post" action="{% url urls.delete object.id %}" id="deleteForm">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger" name="action" value="delete" onclick="return confirmDelete()">Supprimer</button>
+                    <button type="submit" class="btn btn-danger" name="action" value="delete" onclick="return confirmDelete()"><i class="bi bi-trash3-fill"></i> Supprimer</button>
                 </form>
                 <br />
                 {% endif %}
                 {% if urls.parent %}
                     <form method="post" action="{% if parent %} {% url urls.parent parent.id %}{% else %}{% url urls.parent %}{% endif %}">
                 {% csrf_token %}
-                    <button type="submit" class="btn btn-secondary" name="action" value="back">Retour</button>
+                    <button type="submit" class="btn btn-secondary" name="action" value="back"><i class="bi bi-arrow-return-left"></i> Retour</button>
                 </form>
                 <br />
                 {% endif %}

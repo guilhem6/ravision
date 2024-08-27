@@ -14,9 +14,25 @@ def index(request):
     return render(request,'quizz/index.html')
 
 # Utilisation de la fonction prepare_render_context dans vos vues
-def subjects(request):
+def catalogue(request):
     filterForm = SubjectFilterForm(request.GET)
     subjects = Subject.objects.all()
+    addForm = SubjectUpdateForm()
+    tests = Test.objects.all()
+    chart = get_custom_scores(tests, request)
+    
+    if filterForm.is_valid():
+        subjects = filterForm.filter_queryset(subjects)
+    
+    subjects = paginate_children(request,subjects)
+    fields = {'name':'Nom','short_name':'Trigramme'}
+    action = 'catalogue'
+    context = prepare_render_context(action, filterForm, subjects, request, fields, childurl='subject', addForm = addForm, chart=chart, gameurl=None)
+    return update_page(request,chart,action,context) 
+
+def subjects(request):
+    filterForm = SubjectFilterForm(request.GET)
+    subjects = Subject.objects.filter(user=request.user)
     addForm = SubjectUpdateForm()
     tests = Test.objects.all()
     chart = get_custom_scores(tests, request)
@@ -29,7 +45,7 @@ def subjects(request):
             if addForm.is_valid():
                 name = addForm.cleaned_data['name']
                 short_name = addForm.cleaned_data['short_name']
-                Subject.objects.create(name=name, short_name = short_name)
+                Subject.objects.create(name=name, short_name = short_name, user=request.user)
                 message_added(request,name,'La nouvelle matière')
     
     subjects = paginate_children(request,subjects)
@@ -173,7 +189,7 @@ def import_excel(request):
             name = request.POST.get('name')
             short_name = request.POST.get('short_name')
             file_content = excel_file.read()
-            result = import_task.delay(name,short_name,file_content)
+            result = import_task.delay(name,short_name,request.user.id,file_content)
             task_id = result.task_id
             request.session['task_id'] = task_id
     else:
@@ -269,7 +285,7 @@ def game_start(request,quizz_type,id=0):
                 questions = selected_question.order_by('?')[:max_questions]
 
             # Créer le quizz sans les questions
-            quizz = Quizz.objects.create(name=quizz_name, mode=selected_mode, hints=hints)
+            quizz = Quizz.objects.create(name=quizz_name, mode=selected_mode, hints=hints, user=request.user)
 
             # Associer les questions au quizz
             quizz.questions.set(questions)
