@@ -16,25 +16,29 @@ def index(request):
 # Utilisation de la fonction prepare_render_context dans vos vues
 def catalogue(request):
     filterForm = SubjectFilterForm(request.GET)
-    subjects = Subject.objects.all()
-    addForm = SubjectUpdateForm()
-    tests = Test.objects.all()
-    chart = get_custom_scores(tests, request)
+    subjects = Subject.objects.filter(private=False)
+    tests = Test.objects.filter(question__lecture__subject__in=subjects)
     
     if filterForm.is_valid():
         subjects = filterForm.filter_queryset(subjects)
     
+    info = {'Nombre de matières':subjects.count(),
+        'Nombre de chapitres':Lecture.objects.filter(subject__in=subjects).count(),
+        'Nombre de questions':Question.objects.filter(lecture__subject__in=subjects).count()}
+    info, chart = get_info_chart(request,info,tests)
+
     subjects = paginate_children(request,subjects)
     fields = {'name':'Nom','short_name':'Trigramme'}
     action = 'catalogue'
-    context = prepare_render_context(action, filterForm, subjects, request, fields, childurl='subject', addForm = addForm, chart=chart, gameurl=None)
+    context = prepare_render_context(action, filterForm, subjects, request, fields, childurl='subject', chart=chart, gameurl=None, property=False, info=info)
     return update_page(request,chart,action,context) 
 
 def subjects(request):
+    user = request.user
     filterForm = SubjectFilterForm(request.GET)
-    subjects = Subject.objects.filter(user=request.user)
+    subjects = Subject.objects.filter(user=user)
     addForm = SubjectUpdateForm()
-    tests = Test.objects.all()
+    tests = Test.objects.filter(user=user)
     chart = get_custom_scores(tests, request)
     
     if filterForm.is_valid():
@@ -47,14 +51,18 @@ def subjects(request):
                 short_name = addForm.cleaned_data['short_name']
                 Subject.objects.create(name=name, short_name = short_name, user=request.user)
                 message_added(request,name,'La nouvelle matière')
-    
+    info = {'Nombre de matières':subjects.count(),
+            'Nombre de chapitres':Lecture.objects.filter(user=user).count(),
+            'Nombre de questions':Question.objects.filter(user=user).count()}
+    info, chart = get_info_chart(request,info,tests)
     subjects = paginate_children(request,subjects)
     fields = {'name':'Nom','short_name':'Trigramme'}
     action = 'subjects'
-    context = prepare_render_context(action, filterForm, subjects, request, fields, childurl='subject', addForm = addForm, chart=chart)
+    context = prepare_render_context(action, filterForm, subjects, request, fields, childurl='subject', addForm = addForm, chart=chart,property=False,info=info)
     return update_page(request,chart,action,context)
     
 def subject(request, id):
+    user = request.user
     filterForm = LectureFilterForm(request.GET)
     subject = get_object_or_404(Subject, pk=id)
     lectures = Lecture.objects.filter(subject_id=id)
@@ -63,8 +71,8 @@ def subject(request, id):
 
     questions = Question.objects.filter(lecture__in=lectures)
     tests = Test.objects.filter(question__in=questions)
-
-    chart = get_custom_scores(tests, request)
+    user_tests = tests.filter(user=user)
+    chart = get_custom_scores(user_tests, request)
 
     if filterForm.is_valid():
         lectures = filterForm.filter_queryset(lectures)
@@ -81,12 +89,16 @@ def subject(request, id):
             addForm = LectureUpdateForm(request.POST)
             if addForm.is_valid():
                 name = addForm.cleaned_data['name']
-                Lecture.objects.create(name=name, subject=subject)
+                Lecture.objects.create(name=name, subject=subject).save()
                 message_added(request,name,'Le nouveau chapitre')
+    info = {'Matière':subject,
+            'Nombre de chapitres':lectures.count(),
+            'Nombre de questions':questions.count()}
+    info, chart = get_info_chart(request,info,tests)
     lectures = paginate_children(request,lectures)
     fields = {'name':'Nom'}
     action = 'subject'
-    context = prepare_render_context(action, filterForm, lectures, request, fields, object=subject, childurl='lecture', deleteurl='delete_subject', updateForm=updateForm, addForm=addForm,parenturl='subjects', chart=chart)
+    context = prepare_render_context(action, filterForm, lectures, request, fields, object=subject, childurl='lecture', deleteurl='delete_subject', updateForm=updateForm, addForm=addForm,parenturl='subjects', chart=chart, info=info)
     return update_page(request,chart,action,context)
 
 def lecture(request,id):
@@ -97,8 +109,6 @@ def lecture(request,id):
     addForm = QuestionUpdateForm()
 
     tests = Test.objects.filter(question__in=questions)
-
-    chart = get_custom_scores(tests, request)
 
     if request.method == 'POST':
         if request.POST['action'] == 'update':
@@ -112,24 +122,25 @@ def lecture(request,id):
             if addForm.is_valid():
                 question = addForm.cleaned_data['question']
                 answer = addForm.cleaned_data['answer']
-                Question.objects.create(question=question, answer=answer, lecture=lecture)
+                Question.objects.create(question=question, answer=answer, lecture=lecture).save()
                 message_added(request,question,'La nouvelle question')
 
     if filterForm.is_valid():
         questions = filterForm.filter_queryset(questions)
+    info={'Matière':lecture.subject,
+        'Chapitre':lecture,
+        'Nombre de questions':questions.count()}
+    info, chart = get_info_chart(request,info,tests)
     questions = paginate_questions(request,questions)
     fields = {'question':'Question','answer':'Réponse'}
     action = 'lecture'
-    context = prepare_render_context(action, filterForm, questions, request, fields, object=lecture, childurl='question', deleteurl='delete_lecture', updateForm=updateForm, addForm=addForm, sort_by='question', parenturl='subject', parent=lecture.subject, chart=chart)
+    context = prepare_render_context(action, filterForm, questions, request, fields, object=lecture, childurl='question', deleteurl='delete_lecture', updateForm=updateForm, addForm=addForm, sort_by='question', parenturl='subject', parent=lecture.subject, chart=chart, info=info)
     return update_page(request,chart,action,context)
 
 def question(request,id):
     question = get_object_or_404(Question, pk=id)
     tests = Test.objects.filter(question_id=id)
     updateForm = QuestionUpdateForm(instance=question)
-
-    chart = get_custom_scores(tests, request)
-
     if request.method == 'POST':
         if request.POST['action'] == 'update':
             updateForm = QuestionUpdateForm(request.POST, instance=question)
@@ -138,10 +149,15 @@ def question(request,id):
                 question.answer = updateForm.cleaned_data['answer']
                 question.save()
                 message_modification(request,question.question)
+    info={'Matière':question.lecture.subject,
+          'Chapitre':question.lecture,
+          'Question':question.question,
+          'Réponse':question.answer}
+    info, chart = get_info_chart(request,info,tests)
     tests = paginate_tests(request,tests)
     fields = {'date':'Date','correct':'Réussi','hints':'Indices'}
     action = 'question'
-    context = prepare_render_context(action, children=tests, request=request, fields=fields, object=question, childurl='test', deleteurl='delete_question', updateForm=updateForm, sort_by='date', parenturl='lecture', parent=question.lecture, chart=chart)
+    context = prepare_render_context(action, children=tests, request=request, fields=fields, object=question, childurl='test', deleteurl='delete_question', updateForm=updateForm, sort_by='date', parenturl='lecture', parent=question.lecture, chart=chart,info=info)
     return update_page(request,chart,action,context)
 
 def test(request,id):
@@ -217,7 +233,7 @@ def game(request, id):
             correct=is_correct,
             question=quizz.current_question,
             hints=quizz.hints
-        )
+        ).save()
 
         if is_correct:
             messages.success(request, f"{quizz.current_question.answer} is a good answer!")
@@ -306,7 +322,7 @@ def quizzes(request):
         quizzes = filterForm.filter_queryset(quizzes)
     quizzes = paginate_queryset(quizzes.order_by(f"{'-' if request.GET.get('order', 'asc') == 'desc' else ''}{request.GET.get('sort_by', 'name')}"), request, getChildrenPerPage(request))
     fields = {'name':'Nom','mode':'Mode'}
-    context = prepare_render_context('quizzes', filterForm, quizzes, request, fields, childurl='quizz', gameurl=None)
+    context = prepare_render_context('quizzes', filterForm, quizzes, request, fields, childurl='quizz', gameurl=None, property=False)
     return render(request, 'quizz/quizzes.html', context)
 
 def quizz(request,id):
@@ -355,6 +371,7 @@ def user_logout(request):
     return redirect('login')  # Redirige vers la page de connexion après déconnexion
 
 def user_account(request):
+    user = request.user
     if request.method == 'POST':
         action = request.POST.get('action')
         
@@ -364,9 +381,14 @@ def user_account(request):
             return redirect('login')  # Redirige vers la page de connexion après déconnexion
         
         elif action == 'delete':
-            user = request.user
             user.delete()  # Supprime le compte utilisateur
             messages.success(request, "Votre compte a été supprimé avec succès.")
             return redirect('register')  # Redirige vers la page d'inscription après suppression du compte
     
-    return render(request, 'quizz/account.html')
+    context={'info':{'Identifiant':user.username,
+                     'Nombre de matières':Subject.objects.filter(user=user).count(),
+                     'Nombre de chapitres':Lecture.objects.filter(user=user).count(),
+                     'Nombre de questions':Question.objects.filter(user=user).count(),
+                     'Nombre de tests effectués':Test.objects.filter(user=user).count(),
+                     'Nombre de tests réussis':Test.objects.filter(user=user, correct=True).count()}}
+    return render(request, 'quizz/account.html',context)

@@ -37,10 +37,11 @@ class QuizzFilterForm(ObjectFilterForm):
 class SubjectUpdateForm(forms.ModelForm): 
     class Meta:
         model = Subject
-        fields = ['name', 'short_name' ]
+        fields = ['name', 'short_name', 'private' ]
         labels = {
             'name': 'Nom',
             'short_name': 'Trigramme',
+            'private':'Privé'
         }
 
 class LectureUpdateForm(forms.ModelForm): 

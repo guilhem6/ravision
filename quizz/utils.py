@@ -211,7 +211,7 @@ def ajax_check(request):
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
 def update_chart(request,chart):
-    return render(request, 'quizz/graph.html', {'chart': chart})
+    return render(request, 'quizz/object_content/graph.html', {'chart': chart})
 
 def paginate_children(request,children):
     return paginate_queryset(children.order_by(f"{'-' if request.GET.get('order', 'asc') == 'desc' else ''}{request.GET.get('sort_by', 'name')}"), request, getChildrenPerPage(request))
@@ -243,7 +243,7 @@ def paginate_queryset(queryset, request, per_page=10):
 AVAILABLE_CHILDREN_PER_PAGE = ["1", "5", "10", "15", "20", "50"]
 
 # Fonction utilitaire pour préparer le contexte de rendu
-def prepare_render_context(action, filterForm=None, children=None, request=None, fields=None, object=None, childurl=None, deleteurl=None, updateForm = None, addForm = None, sort_by='name', parenturl=None, parent=None, chart=None, quizz=None, gameurl='game_start'):
+def prepare_render_context(action, filterForm=None, children=None, request=None, fields=None, object=None, childurl=None, deleteurl=None, updateForm = None, addForm = None, sort_by='name', parenturl=None, parent=None, chart=None, quizz=None, gameurl='game_start', property=True,info=None):
     return {
         'children': children,
         'object': object,
@@ -263,7 +263,9 @@ def prepare_render_context(action, filterForm=None, children=None, request=None,
         'amounts_of_children': AVAILABLE_CHILDREN_PER_PAGE,
         'fields': fields,   
         'defaultvis':['1',None],
-        'quizz':quizz
+        'quizz':quizz,
+        'property':property,
+        'info':info
     }
 
 def message_modification(request, name):
@@ -271,3 +273,16 @@ def message_modification(request, name):
 
 def message_added(request,name,typenew):
     messages.success(request, f"{typenew} {name} a été ajoutée avec succès")
+
+def all_test_count(tests,user_tests):
+    return {'Nombre de tests effectués':tests.count(),
+            'Nombre de tests réussis':tests.filter(correct=True).count(),
+            'Nombre de tests effectués par moi':user_tests.count(),
+            'Nombre de tests réussis par moi':user_tests.filter(correct=True).count()}
+
+def get_info_chart(request,info,tests):
+    user = request.user
+    user_tests = tests.filter(user=user)
+    chart = get_custom_scores(user_tests, request)
+    info.update(all_test_count(tests,user_tests))
+    return info, chart

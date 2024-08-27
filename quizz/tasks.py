@@ -23,7 +23,7 @@ def import_task(self,name,short_name, user_id,file_content):
     i=0
     for sheet_name in sheets:
         lecture, created = Lecture.objects.get_or_create(name=sheet_name, subject=subject)
-        
+        lecture.save()
         # Lire la feuille actuelle dans un DataFrame
         df = pd.read_excel(xls, sheet_name=sheet_name, dtype=str)
         
@@ -43,7 +43,7 @@ def import_task(self,name,short_name, user_id,file_content):
                         question=row[0],  # Première colonne pour la question
                         answer=row[1],    # Deuxième colonne pour la réponse
                         lecture=lecture
-                    )
+                    ).save()
             except KeyError as e:
                 print(f'KeyError: {e} in sheet {sheet_name} at row {index}')
                 continue  # Skip this row

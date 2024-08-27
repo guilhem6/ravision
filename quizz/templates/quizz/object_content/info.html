@@ -1,0 +1,23 @@
+<div class="accordion" id="filterAccordion1">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="filterHeading1">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse1" aria-expanded="true" aria-controls="filterCollapse1">
+                <i class="bi bi-info-circle"></i>&nbsp;Informations
+            </button>
+        </h2>
+        <div id="filterCollapse1" class="accordion-collapse collapse" aria-labelledby="filterHeading1" data-bs-parent="#filterAccordion1">
+            <div class="accordion-body">
+                <table class="table">
+                    <tbody>
+                        {% for key, value in info.items %}
+                        <tr>
+                            <th>{{ key }}</th>
+                            <td>{{ value }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -3,7 +3,7 @@
 <div id="chart-container">
 
 
-{% include 'quizz/graph.html' %}
+{% include 'quizz/object_content/graph.html' %}
 <form method="get" id="score-form">
     <!-- Pourcentage -->
     <input type="hidden" name="percentage" value="0">
@@ -93,6 +93,11 @@
     </form>
 {% endif %}
 
+<br />
+{% if info %}
+{% include 'quizz/object_content/info.html'%}
+{% endif %}
+
 {% if forms.filter %}
 <br />
 <div class="accordion" id="filterAccordion2">
@@ -139,7 +144,7 @@
         </h2>
         <div id="filterCollapse3" class="accordion-collapse collapse" aria-labelledby="filterHeading3" data-bs-parent="#filterAccordion3">
             <div class="accordion-body">
-
+                {% if property and object.user == request.user %}
                 {% if forms.update %}
                 <h4><i class="bi bi-arrow-repeat"></i> Mettre à jour</h4>
                 <table class="table">
@@ -163,26 +168,7 @@
                 </table>
                 {% endif %}
                 {% if forms.add %}
-                <h4><i class="bi bi-plus-circle"></i> Ajouter un nouvel élément</h4>
-                <table class="table">
-                    <tbody>
-                        <form method="POST">
-                            {% csrf_token %}
-                            {% for field in forms.add %}
-                            <tr>
-                                <th>{{ field.label_tag }}</th>
-                                <td>{{ field }}</td>
-                            </tr>
-                            {% endfor %}
-                            <tr>
-                                <th></th>
-                                <td>
-                                    <button type="submit" class="btn btn-primary" name="action" value="add"><i class="bi bi-plus-circle-fill"></i> Ajouter</button>
-                                </td>
-                            </tr>
-                        </form>
-                    </tbody>
-                </table>
+                {% include 'quizz/object_content/new_element.html' %}
                 {% endif %}
 
                 {%if urls.delete %}
@@ -192,6 +178,9 @@
                     <button type="submit" class="btn btn-danger" name="action" value="delete" onclick="return confirmDelete()"><i class="bi bi-trash3-fill"></i> Supprimer</button>
                 </form>
                 <br />
+                {% endif %}
+                {% elif urls.game and not urls.parent%}
+                {% include 'quizz/object_content/new_element.html' %}
                 {% endif %}
                 {% if urls.parent %}
                     <form method="post" action="{% if parent %} {% url urls.parent parent.id %}{% else %}{% url urls.parent %}{% endif %}">
