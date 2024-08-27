@@ -1,6 +1,6 @@
 from django import forms
 from urllib.parse import urlencode
-from .models import Subject, Lecture, Question, Quizz, QuizzMode
+from .models import Subject, Lecture, Question, Quizz, QuizzMode, UserSettings
 
 class ImportExcelForm(forms.Form):
     name = forms.CharField(label='Nom', required=False)
@@ -76,3 +76,12 @@ class CreateQuizzForm(forms.Form):
     max_questions = forms.IntegerField(min_value=1)
     mode = forms.ModelChoiceField(queryset=QuizzMode.objects.all(), label='Mode')
     hints = forms.BooleanField(label = 'Avec indices', initial=True, required=False)
+
+class UserSettingsForm(forms.ModelForm):
+    class Meta:
+        model = UserSettings
+        fields = ['dark_mode', 'language']
+        labels = {
+            'dark_mode': 'Mode sombre',
+            'language': 'Langue'
+        }

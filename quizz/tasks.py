@@ -1,7 +1,6 @@
 from celery import shared_task
 from celery_progress.backend import ProgressRecorder
 from .models import Subject, Lecture, Question, User
-import os
 import pandas as pd
 from io import BytesIO
 

@@ -17,31 +17,57 @@ def get_graph():
     buffer.close()
     return graph
 
-def get_plot(x, y_correct_with_hint, y_correct_without_hint, y_incorrect_with_hint, y_incorrect_without_hint):
+def get_plot(x, y_correct_with_hint, y_correct_without_hint, y_incorrect_with_hint, y_incorrect_without_hint, dark_mode):
     plt.switch_backend('AGG')
-    plt.figure(figsize=(10, 6))
-    plt.title('Évolution du score')
+    plt.figure(figsize=(12, 8))  # Augmenter la taille du graphique pour plus de lisibilité
+    bar_colors = ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78']
+    # Définir les couleurs en fonction du mode
+    if dark_mode:
+        plt.gcf().patch.set_facecolor('#2a2a2a')  # Couleur de fond du graphique pour le mode sombre
+        plt.gca().set_facecolor('#2a2a2a')  # Couleur de fond des axes pour le mode sombre
+        title_color = 'white'
+        ylabel_color = 'white'
+        tick_color = 'white'
+    else:
+        plt.gcf().patch.set_facecolor('white')  # Couleur de fond du graphique pour le mode clair
+        plt.gca().set_facecolor('white')  # Couleur de fond des axes pour le mode clair
+        title_color = 'black'
+        ylabel_color = 'black'
+        tick_color = 'black'
 
-    # Empiler les barres pour chaque catégorie
-    plt.bar(x, y_correct_without_hint, color='navy')
-    plt.bar(x, y_correct_with_hint, bottom=y_correct_without_hint, color='blue')
-    plt.bar(x, y_incorrect_without_hint, bottom=[sum(y) for y in zip(y_correct_with_hint, y_correct_without_hint)], color='red')
-    plt.bar(x, y_incorrect_with_hint, bottom=[sum(y) for y in zip(y_correct_with_hint, y_correct_without_hint, y_incorrect_without_hint)], color='orange')
+    plt.title('Évolution du score', fontsize=16, color=title_color, fontweight='bold')  # Style de titre moderne
+    plt.xlabel('Catégories', fontsize=14, color=ylabel_color, fontweight='bold')  # Ajouter une étiquette sur l'axe X
+    plt.ylabel('Réponses', fontsize=14, color=ylabel_color, fontweight='bold')  # Ajouter une étiquette sur l'axe Y
 
-    plt.xticks(rotation=45)
-    plt.ylabel('Réponses')
-    plt.tick_params(axis='both', which='both', length=0)  # Enlever les marqueurs
+    # Empiler les barres pour chaque catégorie avec des couleurs adaptées
+    plt.bar(x, y_correct_without_hint, color=bar_colors[0], edgecolor='black', linewidth=0.8)
+    plt.bar(x, y_correct_with_hint, bottom=y_correct_without_hint, color=bar_colors[1], edgecolor='black', linewidth=0.8)
+    plt.bar(x, y_incorrect_without_hint, bottom=[sum(y) for y in zip(y_correct_with_hint, y_correct_without_hint)], color=bar_colors[2], edgecolor='black', linewidth=0.8)
+    plt.bar(x, y_incorrect_with_hint, bottom=[sum(y) for y in zip(y_correct_with_hint, y_correct_without_hint, y_incorrect_without_hint)], color=bar_colors[3], edgecolor='black', linewidth=0.8)
+
+    plt.xticks(rotation=45, fontsize=12, color=tick_color, ha='right')
+    plt.yticks(fontsize=12, color=tick_color)
+    plt.tick_params(axis='both', which='both', colors=tick_color)  # Couleur des ticks
     plt.gca().spines['top'].set_visible(False)  # Enlever les bordures supérieures
     plt.gca().spines['right'].set_visible(False)  # Enlever les bordures droites
     plt.tight_layout()
-    graph = get_graph()
+    
+    # Sauvegarder le graphique dans un buffer pour le retourner en tant que graphique
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    graph = base64.b64encode(buf.getvalue()).decode('utf-8')
+    buf.close()
+    
     return graph
+
 
 def get_scores(tests, percentage=False, 
                show_correct_without_hint=True, 
                show_correct_with_hint=True, 
                show_incorrect_without_hint=True, 
-               show_incorrect_with_hint=True):
+               show_incorrect_with_hint=True,
+               dark_mode=False):
     
     # Obtenir les scores pour chaque catégorie par jour
     categories = ['correct_with_hint', 'correct_without_hint', 'incorrect_with_hint', 'incorrect_without_hint']
@@ -97,7 +123,8 @@ def get_scores(tests, percentage=False,
         scores['correct_with_hint'], 
         scores['correct_without_hint'], 
         scores['incorrect_with_hint'], 
-        scores['incorrect_without_hint']
+        scores['incorrect_without_hint'],
+        dark_mode
     )
 
 def get_custom_scores(tests, request):
@@ -107,7 +134,7 @@ def get_custom_scores(tests, request):
     show_correct_with_hint = (request.GET.get('show_correct_with_hint') in values)
     show_incorrect_without_hint = (request.GET.get('show_incorrect_without_hint') in values)
     show_incorrect_with_hint = (request.GET.get('show_incorrect_with_hint') in values)
-    return get_scores(tests, percentage, show_correct_without_hint, show_correct_with_hint, show_incorrect_without_hint, show_incorrect_with_hint)
+    return get_scores(tests, percentage, show_correct_without_hint, show_correct_with_hint, show_incorrect_without_hint, show_incorrect_with_hint, request.dark_mode)
 
 
 def getChildrenPerPage(request):
@@ -275,10 +302,10 @@ def message_added(request,name,typenew):
     messages.success(request, f"{typenew} {name} a été ajoutée avec succès")
 
 def all_test_count(tests,user_tests):
-    return {'Nombre de tests effectués':tests.count(),
-            'Nombre de tests réussis':tests.filter(correct=True).count(),
-            'Nombre de tests effectués par moi':user_tests.count(),
-            'Nombre de tests réussis par moi':user_tests.filter(correct=True).count()}
+    return {'Nombre de tentatives effectuées':tests.count(),
+            'Nombre de tentatives réussies':tests.filter(correct=True).count(),
+            'Nombre de tentatives effectuées par moi':user_tests.count(),
+            'Nombre de tentatives réussies par moi':user_tests.filter(correct=True).count()}
 
 def get_info_chart(request,info,tests):
     user = request.user

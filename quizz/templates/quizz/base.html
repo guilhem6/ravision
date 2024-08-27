@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
     <meta charset="UTF-8">
-    <title>LimeHugFun</title>
+    <title>Ravision</title>
     <style>
         /* Style pour le popup de succès (vert) */
         .popup.success {
@@ -35,6 +35,105 @@
             text-align: center;
             /*display: none;*/
         }
+
+        /* Base styles for light mode (default) */
+
+/* Dark mode styles */
+body.dark-mode {
+    background-color: #1e1e1e;
+    color: #ccc;
+}
+
+body.dark-mode a {
+    color: #4a90e2;
+}
+
+body.dark-mode a:hover {
+    color: #357ab8;
+}
+
+/* Buttons - Dark Mode */
+body.dark-mode .btn {
+    border: 1px solid #2a2a2a; /* Bordure adaptée au mode sombre */
+}
+
+body.dark-mode .btn:hover {
+    background-color: #444; /* Fond des boutons au survol en mode sombre */
+    border-color: #666; /* Bordure des boutons au survol en mode sombre */
+    color: #fff; /* Couleur du texte des boutons au survol en mode sombre */
+}
+
+
+body.dark-mode input, body.dark-mode textarea, body.dark-mode select {
+    background-color: #333;
+    color: #ccc;
+    border: 1px solid #555;
+}
+
+
+body.dark-mode table th, body.dark-mode table td {
+    border: 1px solid #444;
+}
+
+body.dark-mode table {
+    background-color: #2a2a2a;
+    color: #ccc;
+}
+
+body.dark-mode table th {
+    background-color: #444;
+    color: #eee;
+}
+
+
+
+body.dark-mode .ul {
+    background-color: #333;
+}
+
+
+body.dark-mode .card {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+}
+
+
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
+body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+    color: #ddd;
+}
+
+/* Accordion - Dark Mode */
+body.dark-mode .accordion-item {
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+}
+
+body.dark-mode .accordion-header {
+    background-color: #333;
+    border-bottom: 1px solid #444;
+}
+
+body.dark-mode .accordion-button {
+    background-color: #333;
+    color: #ddd;
+    border: none;
+}
+
+body.dark-mode .accordion-button:not(.collapsed) {
+    background-color: #444;
+    color: #fff;
+}
+
+body.dark-mode .accordion-button:focus {
+    box-shadow: none;
+}
+
+body.dark-mode .accordion-body {
+    background-color: #2a2a2a;
+    color: #ccc;
+    border-top: 1px solid #444;
+}
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -46,14 +145,14 @@
     </script>
 </head>
 
-<body>
+<body class="{% if request.dark_mode %}dark-mode{% endif %}">
     <header class="bg-dark text-light py-4">
         <div class="container">
             <h1 class="mb-0">Ravision</h1>
         </div>
     </header>
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg navbar-{% if request.dark_mode %}dark{%else%}light{% endif %} bg-{% if request.dark_mode %}dark{%else%}light{% endif %}">
         <div class="container">
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
@@ -95,6 +194,11 @@
                     </a>
                 </li>
                 {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'settings' %}">
+                        <i class="bi bi-gear"></i> Paramètres
+                    </a>
+                </li>
                 </li>
             </ul>
         </div>

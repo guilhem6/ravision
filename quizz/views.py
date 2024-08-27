@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .models import Subject, Lecture, Question, Test, Quizz, QuizzMode
-from .forms import ImportExcelForm, SubjectFilterForm, LectureFilterForm, QuestionFilterForm, QuizzFilterForm, SubjectUpdateForm, LectureUpdateForm, QuestionUpdateForm, QuizzUpdateForm, CreateQuizzForm
+from .models import Subject, Lecture, Question, Test, Quizz, QuizzMode, UserSettings
+from .forms import ImportExcelForm, SubjectFilterForm, LectureFilterForm, QuestionFilterForm, QuizzFilterForm, SubjectUpdateForm, LectureUpdateForm, QuestionUpdateForm, QuizzUpdateForm, CreateQuizzForm, UserSettingsForm
 from .tasks import import_task
 import random
 from .utils import *
@@ -99,6 +99,7 @@ def subject(request, id):
     fields = {'name':'Nom'}
     action = 'subject'
     context = prepare_render_context(action, filterForm, lectures, request, fields, object=subject, childurl='lecture', deleteurl='delete_subject', updateForm=updateForm, addForm=addForm,parenturl='subjects', chart=chart, info=info)
+    context.update({'export':True})
     return update_page(request,chart,action,context)
 
 def lecture(request,id):
@@ -392,3 +393,57 @@ def user_account(request):
                      'Nombre de tests effectués':Test.objects.filter(user=user).count(),
                      'Nombre de tests réussis':Test.objects.filter(user=user, correct=True).count()}}
     return render(request, 'quizz/account.html',context)
+
+import pandas as pd
+from django.http import HttpResponse
+from io import BytesIO
+
+def download_excel(request, id):
+    # Récupérer le sujet correspondant
+    subject = Subject.objects.get(id=id)
+    
+    # Créer un objet Excel
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+
+    # Ajouter une feuille pour chaque lecture
+    lectures = Lecture.objects.filter(subject=subject)
+    for lecture in lectures:
+        # Récupérer les questions et réponses associées
+        questions = Question.objects.filter(lecture=lecture)
+        
+        # Créer un DataFrame pour chaque lecture
+        data = {
+            'Question': [q.question for q in questions],
+            'Answer': [q.answer for q in questions]
+        }
+        df = pd.DataFrame(data)
+        
+        # Écrire le DataFrame dans une feuille Excel
+        df.to_excel(writer, sheet_name=lecture.name, index=False, header=False)
+
+    # Finaliser l'écriture du fichier Excel
+    writer.save()
+    output.seek(0)
+
+    # Configurer la réponse HTTP pour le téléchargement
+    response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename={subject.short_name}.xlsx'
+
+    return response
+
+def settings(request):
+    user_settings, created = UserSettings.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        form = UserSettingsForm(request.POST, instance=user_settings)
+        if form.is_valid():
+            form.save()
+            return redirect('settings')
+    else:
+        form = UserSettingsForm(instance=user_settings)
+
+    context = {
+        'form': form
+    }
+    return render(request, 'quizz/settings.html', context)

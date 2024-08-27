@@ -24,4 +24,6 @@ urlpatterns = [
     path('logout/', views.user_logout, name='logout'),
     path('account/', views.user_account, name='account'),
     path('catalogue/', views.catalogue, name='catalogue'),
+    path('download_excel/<int:id>', views.download_excel, name='download_excel'),
+    path('settings', views.settings, name='settings'),
 ]

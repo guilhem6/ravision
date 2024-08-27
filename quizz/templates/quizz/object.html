@@ -64,17 +64,17 @@
         background-color: black;
     } 
     .label-red {
-        background-color: red;
+        background-color: #ff7f0e;
     }
     .label-orange {
-        background-color: orange;
+        background-color: #ffbb78;
     }
     .label-navy {
-        background-color: navy;
+        background-color: #1f77b4;
     }
     
     .label-blue {
-        background-color: blue;
+        background-color: #aec7e8;
     }
     
     .label-grey {
@@ -171,6 +171,13 @@
                 {% include 'quizz/object_content/new_element.html' %}
                 {% endif %}
 
+                {% if export %}
+                <a href="{% url 'download_excel' object.id %}" class="btn btn-primary">
+                    <i class="bi bi-download"></i> Télécharger au format Excel
+                </a>
+                <br /><br />
+                {% endif %}
+                
                 {%if urls.delete %}
 
                 <form method="post" action="{% url urls.delete object.id %}" id="deleteForm">
@@ -182,6 +189,7 @@
                 {% elif urls.game and not urls.parent%}
                 {% include 'quizz/object_content/new_element.html' %}
                 {% endif %}
+
                 {% if urls.parent %}
                     <form method="post" action="{% if parent %} {% url urls.parent parent.id %}{% else %}{% url urls.parent %}{% endif %}">
                 {% csrf_token %}

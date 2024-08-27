@@ -1,0 +1,10 @@
+{% extends 'quizz/base.html' %}
+
+{% block content %}
+<h2><i class="bi bi-gear"></i> Paramètres</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+</form>
+{% endblock %}

@@ -88,7 +88,7 @@ class Test(models.Model):
             self.user = self.question.lecture.subject.user
         super().save(*args, **kwargs)
 
-        
+
 class QuizzMode(models.Model):
     name = models.CharField(max_length = 255,default="")
     def __str__(self):
@@ -109,3 +109,11 @@ class Quizz(models.Model):
             'name': self.name,
             'mode': self.mode.name,
         }
+    
+class UserSettings(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    dark_mode = models.BooleanField(default=False)
+    language = models.CharField(max_length=10, choices=[('en', 'English'), ('fr', 'Français')], default='en')
+
+    def __str__(self):
+        return f"Settings for {self.user.username}"
