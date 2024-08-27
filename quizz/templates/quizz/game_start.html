@@ -1,4 +1,5 @@
 {% extends 'quizz/base.html' %}
+{% load i18n %}
 {% block content %}
 <!--Type de quizz : {{quizz_type}}<br />
 {% if quizz_type == 'subject' %}
@@ -21,13 +22,13 @@
             <tr>
                 <th></th>
                 <td>
-                    <button type="submit" name="action" value="save" class="btn btn-secondary">Créer</button>
+                    <button type="submit" name="action" value="save" class="btn btn-secondary">{%trans "Create"%}</button>
                 </td>
             </tr>
             <tr>
                 <th></th>
                 <td>
-                    <button type="submit" name="action" value="save_and_play" class="btn btn-primary">Créer et jouer</button>
+                    <button type="submit" name="action" value="save_and_play" class="btn btn-primary">{%trans "Create and play"%}</button>
                 </td>
             </tr>
         </tbody>

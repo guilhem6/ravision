@@ -1,4 +1,5 @@
 {% block content %}
+{% load i18n %}
 {% if chart %}
 <div id="chart-container">
 
@@ -58,7 +59,7 @@
     <br />
     <form method="post" action="{% if quizz%}{% url urls.game object.id%}{%elif object %}{% url urls.game urls.action object.id%}{% else %}{% url urls.game urls.action 0 %}{% endif %}">
         {% csrf_token %}
-        <button type="submit" class="btn btn-success" name="action" value="play"><i class="bi bi-play-fill"></i> Jouer</button>
+        <button type="submit" class="btn btn-success" name="action" value="play"><i class="bi bi-play-fill"></i> {%trans "Play"%}</button>
     </form>
 {% endif %}
 
@@ -73,7 +74,7 @@
     <div class="accordion-item">
         <h2 class="accordion-header" id="filterHeading2">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse2" aria-expanded="true" aria-controls="filterCollapse2">
-                <i class="bi bi-funnel"></i>&nbsp;Filtres
+                <i class="bi bi-funnel"></i>&nbsp;{%trans "Filters"%}
             </button>
         </h2>
         <div id="filterCollapse2" class="accordion-collapse collapse" aria-labelledby="filterHeading2" data-bs-parent="#filterAccordion2">
@@ -90,7 +91,7 @@
                             <tr>
                                 <th></th>
                                 <td>
-                                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel-fill"></i> Filtrer</button>
+                                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel-fill"></i> {%trans "Filter"%}</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -108,14 +109,14 @@
     <div class="accordion-item">
         <h2 class="accordion-header" id="filterHeading3">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse3" aria-expanded="true" aria-controls="filterCollapse3">
-                <i class="bi bi-justify-left"></i>&nbsp;Autres actions
+                <i class="bi bi-justify-left"></i>&nbsp;{%trans "Other actions"%}
             </button>
         </h2>
         <div id="filterCollapse3" class="accordion-collapse collapse" aria-labelledby="filterHeading3" data-bs-parent="#filterAccordion3">
             <div class="accordion-body">
                 {% if property and object.user == request.user %}
                 {% if forms.update %}
-                <h4><i class="bi bi-arrow-repeat"></i> Mettre à jour</h4>
+                <h4><i class="bi bi-arrow-repeat"></i> {%trans "Update"%}</h4>
                 <table class="table">
                     <tbody>
                         <form method="POST">
@@ -142,7 +143,7 @@
 
                 {% if export %}
                 <a href="{% url 'download_excel' object.id %}" class="btn btn-primary">
-                    <i class="bi bi-download"></i> Télécharger au format Excel
+                    <i class="bi bi-download"></i> {%trans "Download in an Excel file"%}
                 </a>
                 <br /><br />
                 {% endif %}
@@ -162,7 +163,7 @@
                 {% if urls.parent %}
                     <form method="post" action="{% if parent %} {% url urls.parent parent.id %}{% else %}{% url urls.parent %}{% endif %}">
                 {% csrf_token %}
-                    <button type="submit" class="btn btn-secondary" name="action" value="back"><i class="bi bi-arrow-return-left"></i> Retour</button>
+                    <button type="submit" class="btn btn-secondary" name="action" value="back"><i class="bi bi-arrow-return-left"></i> {%trans "Go back"%}</button>
                 </form>
                 <br />
                 {% endif %}
@@ -191,7 +192,7 @@
         {% for object in children %}
         <tr class="object-row" data-url="{% url urls.child id=object.id%}">
             {% for key, value in object.as_dict.items %}
-            <td>{{ value|default:"<span style='color: darkred;font-weight: bold;'>INCONNU</span>" }}</td>
+            <td>{{ value|default:"<span style='color: darkred;font-weight: bold;'>?</span>" }}</td>
             {% endfor %}
         </tr>
         {% endfor %}
@@ -209,7 +210,7 @@
         {% endif %}
 
         <span class="current">
-            Page {{ children.number }} sur {{ children.paginator.num_pages }}
+            {%trans "Page"%} {{ children.number }} {%trans "-page- of"%} {{ children.paginator.num_pages }}
         </span>
 
         {% if children.has_next %}
@@ -221,13 +222,13 @@
 <br />
 
 <form method="get" action="{% if object.id %}{% url urls.action id=object.id%}{% else %}{% url urls.action %}{% endif %}">
-    <label for="children_per_page">Eléments par page :</label>
+    <label for="children_per_page">{%trans "Number of displayed elements"%} :</label>
     <select name="children_per_page" id="children_per_page">
         {% for option in amounts_of_children %}
             <option value="{{ option }}" {% if children_per_page == option %} selected {% endif %}>{{ option }}</option>
         {% endfor %}
     </select>
-    <button type="submit" class="btn btn-primary">Appliquer</button>
+    <button type="submit" class="btn btn-primary">{%trans "Apply"%}</button>
 </form>
 
 

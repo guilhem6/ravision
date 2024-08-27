@@ -1,6 +1,7 @@
 {% extends 'quizz/base.html' %}
+{% load i18n %}
 {% block content %}
-<h2><i class="bi bi-file-earmark-arrow-up"></i> Importer depuis un fichier Excel</h2>
+<h2><i class="bi bi-file-earmark-arrow-up"></i> {%trans "Import from an Excel file"%}</h2>
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -15,7 +16,7 @@
             <tr>
                 <th></th>
                 <td>
-                    <button type="submit" class="btn btn-primary">Importer</button>
+                    <button type="submit" class="btn btn-primary">{%trans "Import"%}</button>
                 </td>
             </tr>
         </tbody>

@@ -1,5 +1,5 @@
 {% extends 'quizz/base.html' %}
-
+{% load i18n %}
 
 {% block content %}
 <h2><i class="bi bi-person-circle"></i> {{ user.username }}</h2>
@@ -8,8 +8,8 @@
 <br />
 <form method="POST">
     {% csrf_token %}
-    <button type="submit" class="btn btn-primary" name="action" value="logout"><i class="bi bi-box-arrow-left"></i> Me déconnecter</button>
+    <button type="submit" class="btn btn-primary" name="action" value="logout"><i class="bi bi-box-arrow-left"></i> {%trans "Logout"%}</button>
     <br /><br />
-    <button type="submit" class="btn btn-danger" name="action" value="delete" onclick="return confirmDelete()"><i class="bi bi-trash3-fill"></i> Supprimer mon compte</button>
+    <button type="submit" class="btn btn-danger" name="action" value="delete" onclick="return confirmDelete()"><i class="bi bi-trash3-fill"></i> {%trans "Delete my account"%}</button>
 </form>
 {% endblock %}

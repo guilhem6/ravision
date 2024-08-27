@@ -1,10 +1,11 @@
 {% extends 'quizz/base.html' %}
+{% load i18n %}
 
 {% block content %}
-<h2><i class="bi bi-gear"></i> Paramètres</h2>
+<h2><i class="bi bi-gear"></i> {%trans "Settings"%}</h2>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <button type="submit" class="btn btn-primary">{%trans "Save"%}</button>
 </form>
 {% endblock %}

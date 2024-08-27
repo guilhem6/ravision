@@ -1,4 +1,5 @@
-<h4><i class="bi bi-plus-circle"></i> Ajouter un nouvel élément</h4>
+{% load i18n %}
+<h4><i class="bi bi-plus-circle"></i> {% trans "Add a new element" %}</h4>
 <table class="table">
     <tbody>
         <form method="POST">
@@ -12,7 +13,7 @@
             <tr>
                 <th></th>
                 <td>
-                    <button type="submit" class="btn btn-primary" name="action" value="add"><i class="bi bi-plus-circle-fill"></i> Ajouter</button>
+                    <button type="submit" class="btn btn-primary" name="action" value="add"><i class="bi bi-plus-circle-fill"></i> {% trans "Add" %}</button>
                 </td>
             </tr>
         </form>

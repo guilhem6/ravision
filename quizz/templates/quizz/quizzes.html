@@ -1,7 +1,8 @@
 {% extends 'quizz/base.html' %}
+{% load i18n %}
 {% block content %}
 
-<h2><i class="bi bi-play-circle"></i> Parties en cours</h2>
+<h2><i class="bi bi-play-circle"></i> {%trans "Current games"%}</h2>
 
 {% include 'quizz/object.html' %}
 

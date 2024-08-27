@@ -1,101 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        {% load i18n %}
+        {%load static%}
+        <link rel="stylesheet" href="{% static 'quizz/style.css' %}">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="{% static 'quizz/script.js' %}"></script>
+        <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
+        <meta charset="UTF-8">
+        <title>Ravision</title>
+    </head>
+    <body class="{% if request.dark_mode %}dark-mode{% else %}light-mode{% endif %}">
+        <header class="bg-dark text-light py-4">
+            <div class="container">
+                <h1 class="mb-0">Ravision</h1>
+            </div>
+        </header>
+        <nav class="navbar navbar-expand-lg navbar-{% if request.dark_mode %}dark{%else%}light{% endif %} bg-{% if request.dark_mode %}dark{%else%}light{% endif %}">
+            <div class="container">
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'subjects' %}">
+                            <i class="bi bi-bookshelf"></i> {% trans "My subjects" %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'import_excel' %}">
+                            <i class="bi bi-file-earmark-arrow-up"></i> {% trans "Import" %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'quizzes' %}">
+                            <i class="bi bi-play-circle"></i> {% trans "Current games" %}
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="bi bi-box-arrow-in-right"></i> {% trans "Sign in" %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">
+                            <i class="bi bi-person-plus"></i> {% trans "Sign up" %}
+                        </a>
+                    </li>
+                    {% endif %}
 
-<head>
-    {%load static%}
-    <link rel="stylesheet" href="{% static 'quizz/style.css' %}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{% static 'quizz/script.js' %}"></script>
-    <script src="{% static 'celery_progress/celery_progress.js' %}"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.min.js"></script>
-    <meta charset="UTF-8">
-    <title>Ravision</title>
-    <style>
-        /* Style pour le popup de succès (vert) */
-
-    </style>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <script>
-
-    </script>
-</head>
-
-<body class="{% if request.dark_mode %}dark-mode{% else %}light-mode{% endif %}">
-    <header class="bg-dark text-light py-4">
-        <div class="container">
-            <h1 class="mb-0">Ravision</h1>
-        </div>
-    </header>
-
-    <nav class="navbar navbar-expand-lg navbar-{% if request.dark_mode %}dark{%else%}light{% endif %} bg-{% if request.dark_mode %}dark{%else%}light{% endif %}">
-        <div class="container">
-            <ul class="navbar-nav">
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'subjects' %}">
-                        <i class="bi bi-bookshelf"></i> Mes matières
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'import_excel' %}">
-                        <i class="bi bi-file-earmark-arrow-up"></i> Importer
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'quizzes' %}">
-                        <i class="bi bi-play-circle"></i> Parties en cours
-                    </a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">
-                        <i class="bi bi-box-arrow-in-right"></i> Connexion
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'register' %}">
-                        <i class="bi bi-person-plus"></i> Créer un compte
-                    </a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'catalogue' %}">
-                        <i class="bi bi-list"></i> Catalogue
-                    </a>
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'account' %}">
-                        <i class="bi bi-person-circle"></i> Mon compte
-                    </a>
-                </li>
-                
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'settings' %}">
-                        <i class="bi bi-gear"></i> Paramètres
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-    </nav>
-    
-
-
-
-    <main class="container mt-4">
-        {% if messages %}
-        {% for message in messages %}
-        <div id="popup" class="popup {% if message.tags == 'success' %}success{% else %}error{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
-        {% endif %}
-        {% block content %}
-        {% endblock %}
-    </main>
-</body>
-
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'catalogue' %}">
+                            <i class="bi bi-list"></i> {% trans "Catalog" %}
+                        </a>
+            
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'account' %}">
+                            <i class="bi bi-person-circle"></i> {% trans "My account" %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'settings' %}">
+                            <i class="bi bi-gear"></i> {% trans "Settings" %}
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+        <main class="container mt-4">
+            {% if messages %}
+            {% for message in messages %}
+            <div id="popup" class="popup {% if message.tags == 'success' %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% block content %}
+            {% endblock %}
+        </main>
+    </body>
 </html>
