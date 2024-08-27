@@ -28,3 +28,184 @@
         min-width: 400px;  /* Largeur minimale du conteneur */
         min-height: 300px; /* Hauteur minimale du conteneur */
     }
+
+    .popup.success {
+        background-color: green;
+        color: white;
+    }
+
+    /* Style pour le popup d'erreur (rouge) */
+    .popup.error {
+        background-color: red;
+        color: white;
+    }
+
+    /* Autres styles pour le popup*/
+    .popup {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 10px;
+        text-align: center;
+        /*display: none;*/
+    }
+
+    /* Base styles for light mode (default) */
+
+/* Dark mode styles */
+body.dark-mode {
+background-color: #1e1e1e;
+color: #ccc;
+}
+
+body.dark-mode a {
+color: #4a90e2;
+}
+
+body.dark-mode a:hover {
+color: #357ab8;
+}
+
+/* Buttons - Dark Mode */
+body.dark-mode .btn {
+border: 1px solid #2a2a2a; /* Bordure adaptée au mode sombre */
+}
+
+body.dark-mode .btn:hover {
+background-color: #444; /* Fond des boutons au survol en mode sombre */
+border-color: #666; /* Bordure des boutons au survol en mode sombre */
+color: #fff; /* Couleur du texte des boutons au survol en mode sombre */
+}
+
+
+body.dark-mode input, body.dark-mode textarea, body.dark-mode select {
+background-color: #333;
+color: #ccc;
+border: 1px solid #555;
+}
+
+
+body.dark-mode table th, body.dark-mode table td {
+border: 1px solid #444;
+}
+
+body.dark-mode table {
+background-color: #2a2a2a;
+color: #ccc;
+}
+
+body.dark-mode table th {
+background-color: #444;
+color: #eee;
+}
+
+
+
+body.dark-mode .ul {
+background-color: #333;
+}
+
+
+body.dark-mode .card {
+background-color: #2a2a2a;
+border: 1px solid #444;
+}
+
+
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
+body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+color: #ddd;
+}
+
+/* Accordion - Dark Mode */
+body.dark-mode .accordion-item {
+background-color: #2a2a2a;
+border: 1px solid #444;
+}
+
+body.dark-mode .accordion-header {
+background-color: #333;
+border-bottom: 1px solid #444;
+}
+
+body.dark-mode .accordion-button {
+background-color: #333;
+color: #ddd;
+border: none;
+}
+
+body.dark-mode .accordion-button:not(.collapsed) {
+background-color: #444;
+color: #fff;
+}
+
+body.dark-mode .accordion-button:focus {
+box-shadow: none;
+}
+
+body.dark-mode .accordion-body {
+background-color: #2a2a2a;
+color: #ccc;
+border-top: 1px solid #444;
+}
+
+
+    .label{
+        color:white;
+        display: inline-block;
+        width: 250px; /* Largeur fixe pour tous les labels */
+        padding: 10px;
+        margin-bottom: 10px;
+        text-align: left;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    
+    body.light-mode .label-white {
+        background-color: #2a2a2a;
+        color: white;
+    } 
+    body.light-mode .label-red {
+        background-color: #ff5733;
+    }
+    body.light-mode .label-orange {
+        background-color: #ff9a33;
+    }
+    body.light-mode .label-navy {
+        background-color: #007bff;
+    }
+    
+    body.light-mode .label-blue {
+        background-color: #66b3ff;
+    }
+    
+    body.light-mode .label-grey {
+        background-color: grey;
+    }
+
+    body.dark-mode .label-white {
+        background-color: #414141;
+        color: white;
+    } 
+    body.dark-mode .label-red {
+        background-color: #ff7f0e;
+    }
+    body.dark-mode .label-orange {
+        background-color: #ffbb78;
+    }
+    body.dark-mode .label-navy {
+        background-color: #1f77b4;
+    }
+    
+    body.dark-mode .label-blue {
+        background-color: #aec7e8;
+    }
+    
+    body.dark-mode .label-grey {
+        background-color: grey;
+    }
+
+

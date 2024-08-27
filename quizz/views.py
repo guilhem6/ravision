@@ -21,11 +21,13 @@ def catalogue(request):
     
     if filterForm.is_valid():
         subjects = filterForm.filter_queryset(subjects)
-    
-    info = {'Nombre de matières':subjects.count(),
+    if request.user.is_authenticated:
+        info = {'Nombre de matières':subjects.count(),
         'Nombre de chapitres':Lecture.objects.filter(subject__in=subjects).count(),
         'Nombre de questions':Question.objects.filter(lecture__subject__in=subjects).count()}
-    info, chart = get_info_chart(request,info,tests)
+        info, chart = get_info_chart(request,info,tests)
+    else :
+        info, chart = None, None
 
     subjects = paginate_children(request,subjects)
     fields = {'name':'Nom','short_name':'Trigramme'}

@@ -41,3 +41,8 @@ function submitFormAjax() {
         }
     });
 }
+
+$(document).ready(function() {
+    // Afficher le popup pendant 3 secondes
+    $('#popup').fadeIn(1000).delay(3000).fadeOut(1000);
+});

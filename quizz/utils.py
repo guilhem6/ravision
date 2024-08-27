@@ -20,20 +20,22 @@ def get_graph():
 def get_plot(x, y_correct_with_hint, y_correct_without_hint, y_incorrect_with_hint, y_incorrect_without_hint, dark_mode):
     plt.switch_backend('AGG')
     plt.figure(figsize=(12, 8))  # Augmenter la taille du graphique pour plus de lisibilité
-    bar_colors = ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78']
+    
     # Définir les couleurs en fonction du mode
     if dark_mode:
-        plt.gcf().patch.set_facecolor('#2a2a2a')  # Couleur de fond du graphique pour le mode sombre
-        plt.gca().set_facecolor('#2a2a2a')  # Couleur de fond des axes pour le mode sombre
+        plt.gcf().patch.set_facecolor('#1e1e1e')  # Couleur de fond du graphique pour le mode sombre
+        plt.gca().set_facecolor('#1e1e1e')  # Couleur de fond des axes pour le mode sombre
         title_color = 'white'
         ylabel_color = 'white'
         tick_color = 'white'
+        bar_colors = ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78']
     else:
         plt.gcf().patch.set_facecolor('white')  # Couleur de fond du graphique pour le mode clair
         plt.gca().set_facecolor('white')  # Couleur de fond des axes pour le mode clair
         title_color = 'black'
         ylabel_color = 'black'
         tick_color = 'black'
+        bar_colors = ['#007bff', '#66b3ff', '#ff5733', '#ff9a33']
 
     plt.title('Évolution du score', fontsize=16, color=title_color, fontweight='bold')  # Style de titre moderne
     plt.xlabel('Catégories', fontsize=14, color=ylabel_color, fontweight='bold')  # Ajouter une étiquette sur l'axe X
