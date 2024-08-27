@@ -6,7 +6,8 @@ from django.shortcuts import render
 from datetime import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
-
+from django.utils.translation import gettext as _
+  
 def get_graph():
     buffer = BytesIO()
     plt.savefig(buffer, format='png')
@@ -26,20 +27,16 @@ def get_plot(x, y_correct_with_hint, y_correct_without_hint, y_incorrect_with_hi
         plt.gcf().patch.set_facecolor('#1e1e1e')  # Couleur de fond du graphique pour le mode sombre
         plt.gca().set_facecolor('#1e1e1e')  # Couleur de fond des axes pour le mode sombre
         title_color = 'white'
-        ylabel_color = 'white'
         tick_color = 'white'
         bar_colors = ['#1f77b4', '#aec7e8', '#ff7f0e', '#ffbb78']
     else:
         plt.gcf().patch.set_facecolor('white')  # Couleur de fond du graphique pour le mode clair
         plt.gca().set_facecolor('white')  # Couleur de fond des axes pour le mode clair
         title_color = 'black'
-        ylabel_color = 'black'
         tick_color = 'black'
         bar_colors = ['#007bff', '#66b3ff', '#ff5733', '#ff9a33']
 
-    plt.title('Évolution du score', fontsize=16, color=title_color, fontweight='bold')  # Style de titre moderne
-    plt.xlabel('Catégories', fontsize=14, color=ylabel_color, fontweight='bold')  # Ajouter une étiquette sur l'axe X
-    plt.ylabel('Réponses', fontsize=14, color=ylabel_color, fontweight='bold')  # Ajouter une étiquette sur l'axe Y
+    plt.title(_('score evolution'), fontsize=16, color=title_color, fontweight='bold')
 
     # Empiler les barres pour chaque catégorie avec des couleurs adaptées
     plt.bar(x, y_correct_without_hint, color=bar_colors[0], edgecolor='black', linewidth=0.8)
@@ -301,13 +298,13 @@ def message_modification(request, name):
     messages.success(request, f"Les modifications de {name} bien été prises en compte")
 
 def message_added(request,name,typenew):
-    messages.success(request, f"{typenew} {name} a été ajoutée avec succès")
+    messages.success(request, f"{typenew} {name} "+ _("has been added successfully"))
 
 def all_test_count(tests,user_tests):
-    return {'Nombre de tentatives effectuées':tests.count(),
-            'Nombre de tentatives réussies':tests.filter(correct=True).count(),
-            'Nombre de tentatives effectuées par moi':user_tests.count(),
-            'Nombre de tentatives réussies par moi':user_tests.filter(correct=True).count()}
+    return {_('Amount of attempts'):tests.count(),
+            _('Amount of successful attempts'):tests.filter(correct=True).count(),
+            _('My amount of attempts'):user_tests.count(),
+            _('My amount of successful attempts'):user_tests.filter(correct=True).count()}
 
 def get_info_chart(request,info,tests):
     user = request.user

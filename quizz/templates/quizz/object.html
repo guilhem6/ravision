@@ -9,7 +9,7 @@
     <!-- Pourcentage -->
     <input type="hidden" name="percentage" value="0">
     <label for="percentage" id="label-percentage" class="btn label {% if request.GET.percentage in defaultvis %}label-white{% else %}label-grey{% endif %}">
-        Afficher en pourcentage</label>
+        {% trans "show in percent" %}</label>
     <input type="checkbox" id="percentage" name="percentage" value="1"
         {% if request.GET.percentage in defaultvis %}checked{% endif %}
         onchange="submitFormAjax();toggleLabelColor('#label-percentage','label-white');">
@@ -17,7 +17,7 @@
 
     <!-- Bonnes réponses sans indice -->
     <input type="hidden" name="show_correct_without_hint" value="0">
-    <label for="show_correct_without_hint" id="label-cwo" class="btn label {% if request.GET.show_correct_without_hint in defaultvis %}label-navy{% else %}label-grey{% endif %}">Bonnes réponses sans indice</label>
+    <label for="show_correct_without_hint" id="label-cwo" class="btn label {% if request.GET.show_correct_without_hint in defaultvis %}label-navy{% else %}label-grey{% endif %}">{% trans "Good answers without hint" %}</label>
     <input type="checkbox" id="show_correct_without_hint" name="show_correct_without_hint" value="1"
         {% if request.GET.show_correct_without_hint in defaultvis %}checked{% endif %}
         onchange="submitFormAjax();toggleLabelColor('#label-cwo','label-navy');">
@@ -25,7 +25,7 @@
 
     <!-- Bonnes réponses avec indice -->
     <input type="hidden" name="show_correct_with_hint" value="0">
-    <label for="show_correct_with_hint" id="label-cwi" class="btn label {% if request.GET.show_correct_with_hint in defaultvis %}label-blue{% else %}label-grey{% endif %}">Bonnes réponses avec indice</label>
+    <label for="show_correct_with_hint" id="label-cwi" class="btn label {% if request.GET.show_correct_with_hint in defaultvis %}label-blue{% else %}label-grey{% endif %}">{% trans "Good answers with hint" %}</label>
     <input type="checkbox" id="show_correct_with_hint" name="show_correct_with_hint" value="1"
         {% if request.GET.show_correct_with_hint in defaultvis %}checked{% endif %}
         onchange="submitFormAjax();toggleLabelColor('#label-cwi','label-blue');">
@@ -33,7 +33,7 @@
 
     <!-- Mauvaises réponses sans indice -->
     <input type="hidden" name="show_incorrect_without_hint" value="0">
-    <label for="show_incorrect_without_hint" id="label-iwo" class="btn label {% if request.GET.show_incorrect_without_hint in defaultvis %}label-red{% else %}label-grey{% endif %}">Mauvaises réponses sans indice</label>
+    <label for="show_incorrect_without_hint" id="label-iwo" class="btn label {% if request.GET.show_incorrect_without_hint in defaultvis %}label-red{% else %}label-grey{% endif %}">{% trans "Wrong answers without hint" %}</label>
     <input type="checkbox" id="show_incorrect_without_hint" name="show_incorrect_without_hint" value="1"
         {% if request.GET.show_incorrect_without_hint in defaultvis %}checked{% endif %}
         onchange="submitFormAjax();toggleLabelColor('#label-iwo','label-red');">
@@ -41,7 +41,7 @@
 
     <!-- Mauvaises réponses avec indice -->
     <input type="hidden" name="show_incorrect_with_hint" value="0">
-    <label for="show_incorrect_with_hint" id="label-iwi" class="btn label {% if request.GET.show_incorrect_with_hint in defaultvis %}label-orange{% else %}label-grey{% endif %}">Mauvaises réponses avec indice</label>
+    <label for="show_incorrect_with_hint" id="label-iwi" class="btn label {% if request.GET.show_incorrect_with_hint in defaultvis %}label-orange{% else %}label-grey{% endif %}">{% trans "Wrong answers with hint" %}</label>
     <input type="checkbox" id="show_incorrect_with_hint" name="show_incorrect_with_hint" value="1"
         {% if request.GET.show_incorrect_with_hint in defaultvis %}checked{% endif %}
         onchange="submitFormAjax();toggleLabelColor('#label-iwi','label-orange');">

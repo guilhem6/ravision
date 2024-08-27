@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-27 19:55+0200\n"
+"POT-Creation-Date: 2024-08-28 00:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,6 +18,57 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
+#: .\quizz\forms.py:7 .\quizz\forms.py:24 .\quizz\forms.py:28
+#: .\quizz\forms.py:35 .\quizz\forms.py:42 .\quizz\forms.py:52
+#: .\quizz\forms.py:69 .\quizz\forms.py:75 .\quizz\views.py:37
+#: .\quizz\views.py:65 .\quizz\views.py:331
+msgid "Name"
+msgstr ""
+
+#: .\quizz\forms.py:8 .\quizz\forms.py:25 .\quizz\forms.py:43
+#: .\quizz\views.py:37 .\quizz\views.py:65
+msgid "Trigram"
+msgstr ""
+
+#: .\quizz\forms.py:9
+msgid "Select Excel file"
+msgstr ""
+
+#: .\quizz\forms.py:31 .\quizz\forms.py:60
+#: .\quizz\templates\quizz\question.html:5 .\quizz\views.py:161
+msgid "Question"
+msgstr "Question"
+
+#: .\quizz\forms.py:32 .\quizz\forms.py:61 .\quizz\views.py:162
+msgid "Answer"
+msgstr "Réponse"
+
+#: .\quizz\forms.py:44
+msgid "Private"
+msgstr "Privé"
+
+#: .\quizz\forms.py:70 .\quizz\forms.py:77 .\quizz\views.py:331
+msgid "Mode"
+msgstr "Mode"
+
+#: .\quizz\forms.py:71 .\quizz\forms.py:78
+msgid "With hints"
+msgstr "Avec indices"
+
+#: .\quizz\forms.py:85
+msgid "Dark mode"
+msgstr "Mode sombre"
+
+#: .\quizz\forms.py:86
+msgid "Language"
+msgstr "Langue"
+
+#: .\quizz\tasks.py:52
+#, fuzzy
+#| msgid "has been added successfully"
+msgid "The file has been successfully imported"
+msgstr "a été ajouté avec succès"
+
 #: .\quizz\templates\quizz\account.html:11
 msgid "Logout"
 msgstr "Me déconnecter"
@@ -26,53 +77,66 @@ msgstr "Me déconnecter"
 msgid "Delete my account"
 msgstr "Supprimer mon compte"
 
-#: .\quizz\templates\quizz\base.html:40 .\quizz\templates\quizz\subjects.html:4
+#: .\quizz\templates\quizz\base.html:28 .\quizz\templates\quizz\subjects.html:5
 msgid "My subjects"
 msgstr "Mes matières"
 
-#: .\quizz\templates\quizz\base.html:45
-#: .\quizz\templates\quizz\import_excel.html:18
+#: .\quizz\templates\quizz\base.html:33
+#: .\quizz\templates\quizz\import_excel.html:19
 msgid "Import"
 msgstr "Importer"
 
-#: .\quizz\templates\quizz\base.html:50 .\quizz\templates\quizz\quizzes.html:4
+#: .\quizz\templates\quizz\base.html:38 .\quizz\templates\quizz\quizzes.html:5
 msgid "Current games"
 msgstr "Parties en cours"
 
-#: .\quizz\templates\quizz\base.html:56 .\quizz\templates\quizz\login.html:5
+#: .\quizz\templates\quizz\base.html:44 .\quizz\templates\quizz\login.html:5
 msgid "Sign in"
 msgstr "Se connecter"
 
-#: .\quizz\templates\quizz\base.html:61 .\quizz\templates\quizz\register.html:4
+#: .\quizz\templates\quizz\base.html:49 .\quizz\templates\quizz\register.html:5
 msgid "Sign up"
 msgstr "Créer un compte"
 
-#: .\quizz\templates\quizz\base.html:67
-#: .\quizz\templates\quizz\catalogue.html:4
+#: .\quizz\templates\quizz\base.html:56
+#: .\quizz\templates\quizz\catalogue.html:5
 msgid "Catalog"
 msgstr "Catalogue"
 
-#: .\quizz\templates\quizz\base.html:72
+#: .\quizz\templates\quizz\base.html:62
 msgid "My account"
 msgstr "Mon compte"
 
-#: .\quizz\templates\quizz\base.html:78 .\quizz\templates\quizz\settings.html:4
+#: .\quizz\templates\quizz\base.html:67 .\quizz\templates\quizz\settings.html:5
 msgid "Settings"
 msgstr "Paramètres"
 
-#: .\quizz\templates\quizz\game_start.html:24
+#: .\quizz\templates\quizz\game.html:11
+msgid "Quizz"
+msgstr "Quizz"
+
+#: .\quizz\templates\quizz\game.html:12
+msgid "remaining questions"
+msgstr "questions restantes"
+
+#: .\quizz\templates\quizz\game.html:21
+msgid "Submit answer"
+msgstr "Soumettre la réponse"
+
+#: .\quizz\templates\quizz\game_start.html:25
 msgid "Create"
 msgstr "Créer"
 
-#: .\quizz\templates\quizz\game_start.html:30
+#: .\quizz\templates\quizz\game_start.html:31
 msgid "Create and play"
 msgstr "Créer et jouer"
 
-#: .\quizz\templates\quizz\import_excel.html:3
+#: .\quizz\templates\quizz\import_excel.html:4
 msgid "Import from an Excel file"
 msgstr "Importer depuis un fichier Excel"
 
-#: .\quizz\templates\quizz\lecture.html:4
+#: .\quizz\templates\quizz\lecture.html:5 .\quizz\views.py:138
+#: .\quizz\views.py:160
 msgid "Lecture"
 msgstr "Cours"
 
@@ -80,74 +144,197 @@ msgstr "Cours"
 msgid "Log-in"
 msgstr "Connexion"
 
-#: .\quizz\templates\quizz\object.html:61
+#: .\quizz\templates\quizz\object.html:12
+msgid "show in percent"
+msgstr "Afficher en %"
+
+#: .\quizz\templates\quizz\object.html:20
+msgid "Good answers without hint"
+msgstr "Bonnes réponse sans indice"
+
+#: .\quizz\templates\quizz\object.html:28
+msgid "Good answers with hint"
+msgstr "Bonnes réponse avec indices"
+
+#: .\quizz\templates\quizz\object.html:36
+msgid "Wrong answers without hint"
+msgstr "Mauvaises réponse sans indice"
+
+#: .\quizz\templates\quizz\object.html:44
+msgid "Wrong answers with hint"
+msgstr "Mauvaises réponse avec indices"
+
+#: .\quizz\templates\quizz\object.html:62
 msgid "Play"
 msgstr "Jouer"
 
-#: .\quizz\templates\quizz\object.html:76
+#: .\quizz\templates\quizz\object.html:77
 msgid "Filters"
 msgstr "Filtres"
 
-#: .\quizz\templates\quizz\object.html:93
+#: .\quizz\templates\quizz\object.html:94
 msgid "Filter"
 msgstr "Filtrer"
 
-#: .\quizz\templates\quizz\object.html:111
+#: .\quizz\templates\quizz\object.html:112
 msgid "Other actions"
 msgstr "Autres actions"
 
-#: .\quizz\templates\quizz\object.html:118
+#: .\quizz\templates\quizz\object.html:119
 msgid "Update"
 msgstr "Mettre à jour"
 
-#: .\quizz\templates\quizz\object.html:145
+#: .\quizz\templates\quizz\object.html:146
 msgid "Download in an Excel file"
 msgstr "Télécharger dans un fichier Excel"
 
-#: .\quizz\templates\quizz\object.html:165
+#: .\quizz\templates\quizz\object.html:166
 msgid "Go back"
 msgstr "Retour"
 
-#: .\quizz\templates\quizz\object.html:212
+#: .\quizz\templates\quizz\object.html:213
 msgid "Page"
 msgstr "Page"
 
-#: .\quizz\templates\quizz\object.html:212
+#: .\quizz\templates\quizz\object.html:213
 msgid "-page- of"
 msgstr "sur"
 
-#: .\quizz\templates\quizz\object.html:224
+#: .\quizz\templates\quizz\object.html:225
 msgid "Number of displayed elements"
 msgstr "Nombre d'éléments affichés"
 
-#: .\quizz\templates\quizz\object.html:230
+#: .\quizz\templates\quizz\object.html:231
 msgid "Apply"
 msgstr "Appliquer"
 
-#: .\quizz\templates\quizz\object_content\new_element.html:1
+#: .\quizz\templates\quizz\object_content\info.html:6
+msgid "Information"
+msgstr "Informations"
+
+#: .\quizz\templates\quizz\object_content\new_element.html:2
 msgid "Add a new element"
 msgstr "Ajouter un nouvel élément"
 
-#: .\quizz\templates\quizz\object_content\new_element.html:15
+#: .\quizz\templates\quizz\object_content\new_element.html:16
 msgid "Add"
 msgstr "Ajouter"
 
-#: .\quizz\templates\quizz\question.html:4
-msgid "Question"
-msgstr "Question"
-
-#: .\quizz\templates\quizz\quizz.html:4
+#: .\quizz\templates\quizz\quizz.html:5
 msgid "Current game"
 msgstr "Partie en cours"
 
-#: .\quizz\templates\quizz\register.html:8
+#: .\quizz\templates\quizz\register.html:9
 msgid "Create an account"
 msgstr "Créer un compte"
 
-#: .\quizz\templates\quizz\settings.html:8
+#: .\quizz\templates\quizz\settings.html:9
 msgid "Save"
 msgstr "Enregistrer"
 
-#: .\quizz\templates\quizz\subject.html:4
+#: .\quizz\templates\quizz\subject.html:5 .\quizz\views.py:100
+#: .\quizz\views.py:137 .\quizz\views.py:159
 msgid "Subject"
 msgstr "Matière"
+
+#: .\quizz\utils.py:39
+msgid "score evolution"
+msgstr "Évolution du score"
+
+#: .\quizz\utils.py:301
+msgid "has been added successfully"
+msgstr "a été ajouté avec succès"
+
+#: .\quizz\utils.py:304 .\quizz\views.py:399
+msgid "Amount of attempts"
+msgstr "Nombre de tentatives"
+
+#: .\quizz\utils.py:305 .\quizz\views.py:400
+msgid "Amount of successful attempts"
+msgstr "Nombre de tentatives réussies"
+
+#: .\quizz\utils.py:306
+msgid "My amount of attempts"
+msgstr "Mon nombre de tentatives"
+
+#: .\quizz\utils.py:307
+msgid "My amount of successful attempts"
+msgstr "Mon nombre de tentatives réussies"
+
+#: .\quizz\views.py:29 .\quizz\views.py:60 .\quizz\views.py:396
+msgid "Amount of subjects"
+msgstr "Nombre de matières"
+
+#: .\quizz\views.py:30 .\quizz\views.py:61 .\quizz\views.py:101
+#: .\quizz\views.py:397
+msgid "Amount of lectures"
+msgstr "Nombre de cours"
+
+#: .\quizz\views.py:31 .\quizz\views.py:62 .\quizz\views.py:102
+#: .\quizz\views.py:139 .\quizz\views.py:398
+msgid "Amount of questions"
+msgstr "Nombre de questions"
+
+#: .\quizz\views.py:165
+msgid "Date"
+msgstr "Date"
+
+#: .\quizz\views.py:165
+msgid "Success"
+msgstr "Réussi"
+
+#: .\quizz\views.py:165
+msgid "Hints"
+msgstr "Indices"
+
+#: .\quizz\views.py:203
+#, fuzzy
+#| msgid "has been added successfully"
+msgid "The element has been successfully removed"
+msgstr "a été ajouté avec succès"
+
+#: .\quizz\views.py:246
+msgid "is a good answer!"
+msgstr "est une bonne réponse!"
+
+#: .\quizz\views.py:248
+#, fuzzy
+#| msgid "Wrong answers with hint"
+msgid "is a wrong answer, it was"
+msgstr "Mauvaises réponse avec indices"
+
+#: .\quizz\views.py:277
+msgid "Tout"
+msgstr "Tout"
+
+#: .\quizz\views.py:317
+msgid "The quizz"
+msgstr "Le quizz"
+
+#: .\quizz\views.py:317
+#, fuzzy
+#| msgid "has been added successfully"
+msgid "has been successfully created"
+msgstr "a été ajouté avec succès"
+
+#: .\quizz\views.py:321
+msgid "Normal"
+msgstr "Normal"
+
+#: .\quizz\views.py:356
+msgid "Welcome"
+msgstr "Bienvenue"
+
+#: .\quizz\views.py:387
+msgid "You have been logged out."
+msgstr "Vous avez été déconnecté."
+
+#: .\quizz\views.py:392
+#, fuzzy
+#| msgid "has been added successfully"
+msgid "Your account has been successfully removed."
+msgstr "a été ajouté avec succès"
+
+#: .\quizz\views.py:395
+msgid "Login"
+msgstr "Identifiant"

@@ -8,6 +8,10 @@ from .utils import *
 from django.utils import timezone
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.utils.translation import gettext as _
+import pandas as pd
+from django.http import HttpResponse
+from io import BytesIO
 
 # Create your views here.
 def index(request):
@@ -22,15 +26,15 @@ def catalogue(request):
     if filterForm.is_valid():
         subjects = filterForm.filter_queryset(subjects)
     if request.user.is_authenticated:
-        info = {'Nombre de matières':subjects.count(),
-        'Nombre de chapitres':Lecture.objects.filter(subject__in=subjects).count(),
-        'Nombre de questions':Question.objects.filter(lecture__subject__in=subjects).count()}
+        info = {_('Amount of subjects'):subjects.count(),
+        _('Amount of lectures'):Lecture.objects.filter(subject__in=subjects).count(),
+        _('Amount of questions'):Question.objects.filter(lecture__subject__in=subjects).count()}
         info, chart = get_info_chart(request,info,tests)
     else :
         info, chart = None, None
 
     subjects = paginate_children(request,subjects)
-    fields = {'name':'Nom','short_name':'Trigramme'}
+    fields = {'name':_('Name'),'short_name':_('Trigram')}
     action = 'catalogue'
     context = prepare_render_context(action, filterForm, subjects, request, fields, childurl='subject', chart=chart, gameurl=None, property=False, info=info)
     return update_page(request,chart,action,context) 
@@ -53,12 +57,12 @@ def subjects(request):
                 short_name = addForm.cleaned_data['short_name']
                 Subject.objects.create(name=name, short_name = short_name, user=request.user)
                 message_added(request,name,'La nouvelle matière')
-    info = {'Nombre de matières':subjects.count(),
-            'Nombre de chapitres':Lecture.objects.filter(user=user).count(),
-            'Nombre de questions':Question.objects.filter(user=user).count()}
+    info = {_('Amount of subjects'):subjects.count(),
+            _('Amount of lectures'):Lecture.objects.filter(user=user).count(),
+            _('Amount of questions'):Question.objects.filter(user=user).count()}
     info, chart = get_info_chart(request,info,tests)
     subjects = paginate_children(request,subjects)
-    fields = {'name':'Nom','short_name':'Trigramme'}
+    fields = {'name':_('Name'),'short_name':_('Trigram')}
     action = 'subjects'
     context = prepare_render_context(action, filterForm, subjects, request, fields, childurl='subject', addForm = addForm, chart=chart,property=False,info=info)
     return update_page(request,chart,action,context)
@@ -93,9 +97,9 @@ def subject(request, id):
                 name = addForm.cleaned_data['name']
                 Lecture.objects.create(name=name, subject=subject).save()
                 message_added(request,name,'Le nouveau chapitre')
-    info = {'Matière':subject,
-            'Nombre de chapitres':lectures.count(),
-            'Nombre de questions':questions.count()}
+    info = {_('Subject'):subject,
+             _('Amount of lectures'):lectures.count(),
+            _('Amount of questions'):questions.count()}
     info, chart = get_info_chart(request,info,tests)
     lectures = paginate_children(request,lectures)
     fields = {'name':'Nom'}
@@ -130,9 +134,9 @@ def lecture(request,id):
 
     if filterForm.is_valid():
         questions = filterForm.filter_queryset(questions)
-    info={'Matière':lecture.subject,
-        'Chapitre':lecture,
-        'Nombre de questions':questions.count()}
+    info={_('Subject'):lecture.subject,
+        _('Lecture'):lecture,
+        _('Amount of questions'):questions.count()}
     info, chart = get_info_chart(request,info,tests)
     questions = paginate_questions(request,questions)
     fields = {'question':'Question','answer':'Réponse'}
@@ -152,13 +156,13 @@ def question(request,id):
                 question.answer = updateForm.cleaned_data['answer']
                 question.save()
                 message_modification(request,question.question)
-    info={'Matière':question.lecture.subject,
-          'Chapitre':question.lecture,
-          'Question':question.question,
-          'Réponse':question.answer}
+    info={_('Subject'):question.lecture.subject,
+          _('Lecture'):question.lecture,
+          _('Question'):question.question,
+          _('Answer'):question.answer}
     info, chart = get_info_chart(request,info,tests)
     tests = paginate_tests(request,tests)
-    fields = {'date':'Date','correct':'Réussi','hints':'Indices'}
+    fields = {'date':_('Date'),'correct':_('Success'),'hints':_('Hints')}
     action = 'question'
     context = prepare_render_context(action, children=tests, request=request, fields=fields, object=question, childurl='test', deleteurl='delete_question', updateForm=updateForm, sort_by='date', parenturl='lecture', parent=question.lecture, chart=chart,info=info)
     return update_page(request,chart,action,context)
@@ -196,7 +200,7 @@ def delete_quizz(request, id):
 def delete_object(request, object):
     if request.method == 'POST':
         object.delete()
-        messages.success(request, f"La suppression a bien été effectuée")
+        messages.success(request, _('The element has been successfully removed'))
     return None
 
 def import_excel(request):
@@ -239,9 +243,9 @@ def game(request, id):
         ).save()
 
         if is_correct:
-            messages.success(request, f"{quizz.current_question.answer} is a good answer!")
+            messages.success(request, f"{quizz.current_question.answer} " + _("is a good answer!"))
         else:
-            messages.error(request, f"{user_answer} is a wrong answer, it was: {quizz.current_question.answer}")
+            messages.error(request, f"{user_answer} "+ _("is a wrong answer, it was") + f": {quizz.current_question.answer}")
             if quizz.mode.name == "Error-free":
                 quizz.questions.clear()
 
@@ -270,7 +274,7 @@ def game_end(request):
 def game_start(request,quizz_type,id=0):
     title = 'error'
     if quizz_type == 'subjects' :
-        title = 'Tout'
+        title = _('Tout')
         total_size = Question.objects.all().count()
     elif quizz_type == 'subject' :
         selected_subject = get_object_or_404(Subject,pk=id)
@@ -310,11 +314,11 @@ def game_start(request,quizz_type,id=0):
             quizz.questions.set(questions)
 
             quizz.save()
-            messages.success(request, f"Le quizz {quizz.name} a bien été créé")
+            messages.success(request, _("The quizz") + f" {quizz.name} " + _("has been successfully created"))
             if request.POST.get('action') == 'save_and_play':
                 return redirect('game',id=quizz.id)
 
-    initial_data = {'quizz_name': title,'max_questions':total_size,'mode':QuizzMode.objects.get(name="Normal")}
+    initial_data = {'quizz_name': title,'max_questions':total_size,'mode':QuizzMode.objects.get(name=_("Normal"))}
     form = CreateQuizzForm(initial=initial_data)
     return render(request, 'quizz/game_start.html',{'form':form, 'quizz_type':quizz_type, 'object_id':id, 'title': title})
 
@@ -324,7 +328,7 @@ def quizzes(request):
     if filterForm.is_valid():
         quizzes = filterForm.filter_queryset(quizzes)
     quizzes = paginate_queryset(quizzes.order_by(f"{'-' if request.GET.get('order', 'asc') == 'desc' else ''}{request.GET.get('sort_by', 'name')}"), request, getChildrenPerPage(request))
-    fields = {'name':'Nom','mode':'Mode'}
+    fields = {'name':_('Name'),'mode':_('Mode')}
     context = prepare_render_context('quizzes', filterForm, quizzes, request, fields, childurl='quizz', gameurl=None, property=False)
     return render(request, 'quizz/quizzes.html', context)
 
@@ -349,7 +353,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, f"Bienvenue, {user.username}")
+            messages.success(request, _("Welcome")+ f", {user.username}")
             return redirect('subjects')  # Redirige vers le tableau de bord après inscription
     else:
         form = UserCreationForm()
@@ -380,25 +384,21 @@ def user_account(request):
         
         if action == 'logout':
             logout(request)
-            messages.success(request, "Vous avez été déconnecté.")
+            messages.success(request, _("You have been logged out."))
             return redirect('login')  # Redirige vers la page de connexion après déconnexion
         
         elif action == 'delete':
             user.delete()  # Supprime le compte utilisateur
-            messages.success(request, "Votre compte a été supprimé avec succès.")
+            messages.success(request, _("Your account has been successfully removed."))
             return redirect('register')  # Redirige vers la page d'inscription après suppression du compte
     
-    context={'info':{'Identifiant':user.username,
-                     'Nombre de matières':Subject.objects.filter(user=user).count(),
-                     'Nombre de chapitres':Lecture.objects.filter(user=user).count(),
-                     'Nombre de questions':Question.objects.filter(user=user).count(),
-                     'Nombre de tests effectués':Test.objects.filter(user=user).count(),
-                     'Nombre de tests réussis':Test.objects.filter(user=user, correct=True).count()}}
+    context={'info':{_('Login'):user.username,
+                     _('Amount of subjects'):Subject.objects.filter(user=user).count(),
+                     _('Amount of lectures'):Lecture.objects.filter(user=user).count(),
+                     _('Amount of questions'):Question.objects.filter(user=user).count(),
+                     _('Amount of attempts'):Test.objects.filter(user=user).count(),
+                     _('Amount of successful attempts'):Test.objects.filter(user=user, correct=True).count()}}
     return render(request, 'quizz/account.html',context)
-
-import pandas as pd
-from django.http import HttpResponse
-from io import BytesIO
 
 def download_excel(request, id):
     # Récupérer le sujet correspondant

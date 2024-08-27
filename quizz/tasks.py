@@ -3,6 +3,7 @@ from celery_progress.backend import ProgressRecorder
 from .models import Subject, Lecture, Question, User
 import pandas as pd
 from io import BytesIO
+from django.utils.translation import gettext as _
 
 
 @shared_task(bind=True)
@@ -48,5 +49,5 @@ def import_task(self,name,short_name, user_id,file_content):
                 continue  # Skip this row
         i+=1
         progress_recorder.set_progress(i + 1, number_lectures)
-    return "Le fichier a bien été importé"
+    return _("The file has been successfully imported")
     

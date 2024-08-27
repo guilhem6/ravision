@@ -1,12 +1,12 @@
 from django import forms
 from urllib.parse import urlencode
 from .models import Subject, Lecture, Question, Quizz, QuizzMode, UserSettings
+from django.utils.translation import gettext as _
 
 class ImportExcelForm(forms.Form):
-    name = forms.CharField(label='Nom', required=False)
-    short_name = forms.CharField(label='Trigramme', required=False, max_length=3)
-    #file_path = forms.CharField(label='Chemin du fichier Excel', max_length=1000, widget=forms.TextInput(attrs={'placeholder': 'C:\\chemin\\vers\\le\\fichier.xlsx'}))
-    file_path = forms.FileField(label='Sélectionner le fichier Excel')
+    name = forms.CharField(label=_('Name'), required=False)
+    short_name = forms.CharField(label=_('Trigram'), required=False, max_length=3)
+    file_path = forms.FileField(label=_('Select Excel file'))
 
 class ObjectFilterForm(forms.Form):
     def as_url(self):
@@ -21,27 +21,27 @@ class ObjectFilterForm(forms.Form):
         return queryset.filter(**filters, **kwargs)
 
 class SubjectFilterForm(ObjectFilterForm):
-    name = forms.CharField(label='Nom', required=False)
-    short_name = forms.CharField(label='Trigramme', required=False)
+    name = forms.CharField(label=_('Name'), required=False)
+    short_name = forms.CharField(label=_('Trigram'), required=False)
 
 class LectureFilterForm(ObjectFilterForm):
-    name = forms.CharField(label='Nom', required=False)
+    name = forms.CharField(label=_('Name'), required=False)
 
 class QuestionFilterForm(ObjectFilterForm):
-    question = forms.CharField(label='Question', required=False)
-    answer = forms.CharField(label='Réponse', required=False)
+    question = forms.CharField(label=_('Question'), required=False)
+    answer = forms.CharField(label=_('Answer'), required=False)
 
 class QuizzFilterForm(ObjectFilterForm):
-    name = forms.CharField(label='Nom', required=False)
+    name = forms.CharField(label=_('Name'), required=False)
 
 class SubjectUpdateForm(forms.ModelForm): 
     class Meta:
         model = Subject
         fields = ['name', 'short_name', 'private' ]
         labels = {
-            'name': 'Nom',
-            'short_name': 'Trigramme',
-            'private':'Privé'
+            'name': _('Name'),
+            'short_name': _('Trigram'),
+            'private':_('Private')
         }
 
 class LectureUpdateForm(forms.ModelForm): 
@@ -49,7 +49,7 @@ class LectureUpdateForm(forms.ModelForm):
         model = Lecture
         fields = ['name' ]
         labels = {
-            'name': 'Nom',
+            'name': _('Name'),
         }
 
 class QuestionUpdateForm(forms.ModelForm): 
@@ -57,8 +57,8 @@ class QuestionUpdateForm(forms.ModelForm):
         model = Question
         fields = ['question','answer' ]
         labels = {
-            'question': 'Question',
-            'answer':'Answer'
+            'question': _('Question'),
+            'answer':_('Answer')
         }
 
 class QuizzUpdateForm(forms.ModelForm): 
@@ -66,22 +66,22 @@ class QuizzUpdateForm(forms.ModelForm):
         model = Quizz
         fields = ['name','mode','hints']
         labels = {
-            'name': 'Nom',
-            'mode': 'Mode',
-            'hints' : 'Avec indices'
+            'name': _('Name'),
+            'mode': _('Mode'),
+            'hints' : _('With hints')
         }
 
 class CreateQuizzForm(forms.Form):
-    quizz_name = forms.CharField(label='Nom', required=False)
+    quizz_name = forms.CharField(label=_('Name'), required=False)
     max_questions = forms.IntegerField(min_value=1)
-    mode = forms.ModelChoiceField(queryset=QuizzMode.objects.all(), label='Mode')
-    hints = forms.BooleanField(label = 'Avec indices', initial=True, required=False)
+    mode = forms.ModelChoiceField(queryset=QuizzMode.objects.all(), label=_('Mode'))
+    hints = forms.BooleanField(label = _('With hints'), initial=True, required=False)
 
 class UserSettingsForm(forms.ModelForm):
     class Meta:
         model = UserSettings
         fields = ['dark_mode', 'language']
         labels = {
-            'dark_mode': 'Mode sombre',
-            'language': 'Langue'
+            'dark_mode': _('Dark mode'),
+            'language': _('Language')
         }

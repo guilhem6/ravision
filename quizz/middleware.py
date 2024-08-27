@@ -24,6 +24,5 @@ class UserSettingsMiddleware:
             # Gérer la langue
             request.session['django_language'] = user_settings.language
 
-        print(request.session['django_language'])
         response = self.get_response(request)
         return response
