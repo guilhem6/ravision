@@ -4,6 +4,7 @@ from .models import Subject, Lecture, Question, User
 import pandas as pd
 from io import BytesIO
 from django.utils.translation import gettext as _
+from django.utils import timezone
 
 
 @shared_task(bind=True)
@@ -15,7 +16,7 @@ def import_task(self,name,short_name, user_id,file_content):
         subject = Subject.objects.get(short_name=short_name)
     except Subject.DoesNotExist:
         # Créer un nouveau sujet s'il n'existe pas encore
-        subject = Subject.objects.create(name=name, short_name=short_name,user=user)
+        subject = Subject.objects.create(name=name, short_name=short_name,user=user,creation_date=timezone.now())
     # Utilisation de pandas pour lire les feuilles du fichier Excel
     xls = pd.ExcelFile(BytesIO(file_content), engine='openpyxl')
     sheets = xls.sheet_names
@@ -23,6 +24,8 @@ def import_task(self,name,short_name, user_id,file_content):
     i=0
     for sheet_name in sheets:
         lecture, created = Lecture.objects.get_or_create(name=sheet_name, subject=subject)
+        if created:
+            lecture.creation_date = timezone.now()
         lecture.save()
         # Lire la feuille actuelle dans un DataFrame
         df = pd.read_excel(xls, sheet_name=sheet_name, dtype=str)
@@ -42,7 +45,8 @@ def import_task(self,name,short_name, user_id,file_content):
                     Question.objects.create(
                         question=row[0],  # Première colonne pour la question
                         answer=row[1],    # Deuxième colonne pour la réponse
-                        lecture=lecture
+                        lecture=lecture,
+                        creation_date = timezone.now()
                     ).save()
             except KeyError as e:
                 print(f'KeyError: {e} in sheet {sheet_name} at row {index}')

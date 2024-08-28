@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-28 00:52+0200\n"
+"POT-Creation-Date: 2024-08-28 08:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,48 +18,58 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\quizz\forms.py:7 .\quizz\forms.py:24 .\quizz\forms.py:28
-#: .\quizz\forms.py:35 .\quizz\forms.py:42 .\quizz\forms.py:52
-#: .\quizz\forms.py:69 .\quizz\forms.py:75 .\quizz\views.py:37
-#: .\quizz\views.py:65
+#: .\quizz\forms.py:7 .\quizz\forms.py:31 .\quizz\forms.py:35
+#: .\quizz\forms.py:42 .\quizz\forms.py:49 .\quizz\forms.py:59
+#: .\quizz\forms.py:76 .\quizz\forms.py:82 .\quizz\views.py:37
+#: .\quizz\views.py:65 .\quizz\views.py:331
 msgid "Name"
 msgstr "Name"
 
-#: .\quizz\forms.py:8 .\quizz\forms.py:25 .\quizz\forms.py:43
+#: .\quizz\forms.py:8 .\quizz\forms.py:32 .\quizz\forms.py:50
 #: .\quizz\views.py:37 .\quizz\views.py:65
 msgid "Trigram"
 msgstr "Trigram"
 
-#: .\quizz\forms.py:9
+#: .\quizz\forms.py:10
 msgid "Select Excel file"
 msgstr "Select Excel file"
 
-#: .\quizz\forms.py:31 .\quizz\forms.py:60
+#: .\quizz\forms.py:13
+#, fuzzy
+#| msgid "Choose File"
+msgid "Choose file"
+msgstr "Choose file"
+
+#: .\quizz\forms.py:14
+msgid "Select an Excel file"
+msgstr "Select Excel file"
+
+#: .\quizz\forms.py:38 .\quizz\forms.py:67
 #: .\quizz\templates\quizz\question.html:5 .\quizz\views.py:161
 msgid "Question"
 msgstr "Question"
 
-#: .\quizz\forms.py:32 .\quizz\forms.py:61 .\quizz\views.py:162
+#: .\quizz\forms.py:39 .\quizz\forms.py:68 .\quizz\views.py:162
 msgid "Answer"
 msgstr "Answer"
 
-#: .\quizz\forms.py:44
+#: .\quizz\forms.py:51
 msgid "Private"
 msgstr "Private"
 
-#: .\quizz\forms.py:70 .\quizz\forms.py:77 .\quizz\views.py:331
+#: .\quizz\forms.py:77 .\quizz\forms.py:84 .\quizz\views.py:331
 msgid "Mode"
 msgstr "Mode"
 
-#: .\quizz\forms.py:71 .\quizz\forms.py:78
+#: .\quizz\forms.py:78 .\quizz\forms.py:85
 msgid "With hints"
 msgstr "With hints"
 
-#: .\quizz\forms.py:85
+#: .\quizz\forms.py:92
 msgid "Dark mode"
 msgstr "Dark mode"
 
-#: .\quizz\forms.py:86
+#: .\quizz\forms.py:93
 msgid "Language"
 msgstr "Language"
 
@@ -352,3 +362,19 @@ msgstr "has been added successfully"
 #: .\quizz\views.py:395
 msgid "Login"
 msgstr "Login"
+
+#, fuzzy
+#~| msgid "Current games"
+#~ msgid "Currently"
+#~ msgstr "Current games"
+
+#~ msgid "Change"
+#~ msgstr "Change"
+
+#, fuzzy
+#~| msgid "Select Excel file"
+#~ msgid "Select a file"
+#~ msgstr "Select Excel file"
+
+#~ msgid "No file selected"
+#~ msgstr "No file selected"

@@ -150,6 +150,10 @@ color: #ccc;
 border-top: 1px solid #444;
 }
 
+body.dark-mode .a {
+    color:#fff;
+}
+
 
     .label{
         color:white;

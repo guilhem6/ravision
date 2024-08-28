@@ -55,7 +55,7 @@ def subjects(request):
             if addForm.is_valid():
                 name = addForm.cleaned_data['name']
                 short_name = addForm.cleaned_data['short_name']
-                Subject.objects.create(name=name, short_name = short_name, user=request.user)
+                Subject.objects.create(name=name, short_name = short_name, user=request.user, creation_date = timezone.now())
                 message_added(request,name,'La nouvelle matière')
     info = {_('Amount of subjects'):subjects.count(),
             _('Amount of lectures'):Lecture.objects.filter(user=user).count(),
@@ -95,11 +95,13 @@ def subject(request, id):
             addForm = LectureUpdateForm(request.POST)
             if addForm.is_valid():
                 name = addForm.cleaned_data['name']
-                Lecture.objects.create(name=name, subject=subject).save()
+                Lecture.objects.create(name=name, subject=subject,creation_date = timezone.now()).save()
                 message_added(request,name,'Le nouveau chapitre')
     info = {_('Subject'):subject,
-             _('Amount of lectures'):lectures.count(),
-            _('Amount of questions'):questions.count()}
+            _('Amount of lectures'):lectures.count(),
+            _('Amount of questions'):questions.count(),
+            _('Creation date'):subject.creation_date,
+            _('Last update'):subject.last_change_date}
     info, chart = get_info_chart(request,info,tests)
     lectures = paginate_children(request,lectures)
     fields = {'name':'Nom'}
@@ -129,14 +131,16 @@ def lecture(request,id):
             if addForm.is_valid():
                 question = addForm.cleaned_data['question']
                 answer = addForm.cleaned_data['answer']
-                Question.objects.create(question=question, answer=answer, lecture=lecture).save()
+                Question.objects.create(question=question, answer=answer, lecture=lecture, creation_date = timezone.now()).save()
                 message_added(request,question,'La nouvelle question')
 
     if filterForm.is_valid():
         questions = filterForm.filter_queryset(questions)
     info={_('Subject'):lecture.subject,
         _('Lecture'):lecture,
-        _('Amount of questions'):questions.count()}
+        _('Amount of questions'):questions.count(),
+        _('Creation date'):lecture.creation_date,
+        _('Last update'):lecture.last_change_date}
     info, chart = get_info_chart(request,info,tests)
     questions = paginate_questions(request,questions)
     fields = {'question':'Question','answer':'Réponse'}
@@ -159,7 +163,9 @@ def question(request,id):
     info={_('Subject'):question.lecture.subject,
           _('Lecture'):question.lecture,
           _('Question'):question.question,
-          _('Answer'):question.answer}
+          _('Answer'):question.answer,
+          _('Creation date'):question.creation_date,
+          _('Last update'):question.last_change_date}
     info, chart = get_info_chart(request,info,tests)
     tests = paginate_tests(request,tests)
     fields = {'date':_('Date'),'correct':_('Success'),'hints':_('Hints')}
@@ -230,7 +236,7 @@ def game(request, id):
         quizz.delete()
         return render(request, 'quizz/game_end.html')
 
-    if request.method == 'POST' and request.POST.get('action') == 'attempt':
+    if request.method == 'POST' and request.POST.get('action') == 'attempt' or request.POST.get('timeout') == 'true':
         user_answer = simplify(request.POST.get('answer'))
         correct_answer = simplify(quizz.current_question.answer)
         is_correct = user_answer == correct_answer
@@ -239,7 +245,9 @@ def game(request, id):
             date=timezone.now(),
             correct=is_correct,
             question=quizz.current_question,
-            hints=quizz.hints
+            hints=quizz.hints,
+            expected_answer = quizz.current_question.answer,
+            given_answer = user_answer
         ).save()
 
         if is_correct:
@@ -308,7 +316,7 @@ def game_start(request,quizz_type,id=0):
                 questions = selected_question.order_by('?')[:max_questions]
 
             # Créer le quizz sans les questions
-            quizz = Quizz.objects.create(name=quizz_name, mode=selected_mode, hints=hints, user=request.user)
+            quizz = Quizz.objects.create(name=quizz_name, mode=selected_mode, hints=hints, user=request.user, creation_date = timezone.now())
 
             # Associer les questions au quizz
             quizz.questions.set(questions)
@@ -344,7 +352,16 @@ def quizz(request,id):
                 quizz.mode = cleaned_data['mode']
                 quizz.save()
                 message_modification(request,quizz.name)
-    context = prepare_render_context(None, request=request, object=quizz, deleteurl='delete_quizz', updateForm=updateForm, parenturl='quizzes', gameurl='game', quizz=True)
+    info = {_('Name'):quizz.name,
+            _('Remaining questions'):quizz.questions.count(),
+            _('Mode'):quizz.mode.name,
+            _('Timer mode'):quizz.timer.name,
+            _('Private'):quizz.private,
+            _('Hints'):quizz.hints,
+            _('Creation date'):quizz.creation_date,
+            _('Last update'):quizz.last_change_date
+            }
+    context = prepare_render_context(None, request=request, object=quizz, deleteurl='delete_quizz', updateForm=updateForm, parenturl='quizzes', gameurl='game', quizz=True, info=info)
     return render(request, 'quizz/quizz.html', context)
 
 def register(request):

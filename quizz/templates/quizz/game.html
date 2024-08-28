@@ -8,16 +8,52 @@
     });
 </script>
 
-<h2>{%trans "Quizz"%} : {{quizz.name}}</h2>
-<p>{{ count }} {%trans "remaining questions"%}</p>
-<form method="post">
+<h2>{% trans "Quizz" %} : {{ quizz.name }}</h2>
+<p>{{ count }} {% trans "remaining questions" %}</p>
+
+{% if quizz.timer.name != 'No timer' %}
+    <p id="timer"></p> <!-- Ajout de l'affichage du timer -->
+{% endif %}
+
+<form method="post" id="quizz-form">
     {% csrf_token %}
     <input type="hidden" name="question_id" value="{{ question.id }}">
+    <input type="hidden" name="timeout" value="false" id="timeout"> <!-- Champ caché pour indiquer l'expiration du temps -->
     <strong>{{ question.lecture.subject.name }}<br/>
     {{ question.lecture.name }}</strong><br/><br/>
     {{ question.question }}<br />
     {% if quizz.hints %} Hint : {{ hint }}<br /> {% endif %}
     <input type="text" id="answer" name="answer" size="60"><br /><br />
-    <button type="submit" class="btn btn-primary" name="action" value="attempt">{%trans "Submit answer"%}</button>
+    <button type="submit" class="btn btn-primary" name="action" value="attempt">{% trans "Submit answer" %}</button>
 </form>
+
+{% if quizz.timer.name != 'No timer' %}
+<script>
+    let timerElement = document.getElementById('timer');
+    let timerValue = '{{ quizz.timer.name }}';
+    let timeLeft;
+
+    if (timerValue === '30s') {
+        timeLeft = 30;
+    } else if (timerValue === '60s') {
+        timeLeft = 60;
+    }
+
+    function updateTimer() {
+        if (timeLeft > 0) {
+            timerElement.textContent = "Temps restant : " + timeLeft + "s";
+            timeLeft--;
+        } else {
+            document.getElementById('timeout').value = 'true'; // Indiquer que le temps est écoulé
+            document.getElementById('quizz-form').submit(); // Soumettre automatiquement le formulaire
+        }
+    }
+
+    if (timeLeft) {
+        setInterval(updateTimer, 1000); // Décompte chaque seconde
+    }
+</script>
+{% endif %}
+
+
 {% endblock %}

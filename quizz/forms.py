@@ -1,12 +1,19 @@
 from django import forms
 from urllib.parse import urlencode
-from .models import Subject, Lecture, Question, Quizz, QuizzMode, UserSettings
-from django.utils.translation import gettext as _
+from .models import Subject, Lecture, Question, Quizz, QuizzMode, UserSettings, TimerMode
+from django.utils.translation import gettext_lazy as _
 
 class ImportExcelForm(forms.Form):
     name = forms.CharField(label=_('Name'), required=False)
     short_name = forms.CharField(label=_('Trigram'), required=False, max_length=3)
-    file_path = forms.FileField(label=_('Select Excel file'))
+    file_path = forms.FileField(
+        label=_('Select Excel file'),
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'form-control',
+            'data-browse': _('Choose file'),  # Personnaliser le bouton de sélection
+            'aria-label': _('Select an Excel file'),  # Texte d'accessibilité pour les lecteurs d'écran
+        })
+    )
 
 class ObjectFilterForm(forms.Form):
     def as_url(self):
@@ -64,19 +71,22 @@ class QuestionUpdateForm(forms.ModelForm):
 class QuizzUpdateForm(forms.ModelForm): 
     class Meta:
         model = Quizz
-        fields = ['name','mode','hints']
+        fields = ['name','mode','hints','timer']
         labels = {
             'name': _('Name'),
             'mode': _('Mode'),
-            'hints' : _('With hints')
-        }
+            'hints' : _('With hints'),
+            'timer' : _('Timer mode')
+            }
+
 
 class CreateQuizzForm(forms.Form):
     quizz_name = forms.CharField(label=_('Name'), required=False)
     max_questions = forms.IntegerField(min_value=1)
     mode = forms.ModelChoiceField(queryset=QuizzMode.objects.all(), label=_('Mode'))
     hints = forms.BooleanField(label = _('With hints'), initial=True, required=False)
-
+    timer = forms.ModelChoiceField(queryset=TimerMode.objects.all(), label=_('Timer mode'))
+ 
 class UserSettingsForm(forms.ModelForm):
     class Meta:
         model = UserSettings
