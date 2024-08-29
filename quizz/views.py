@@ -14,6 +14,7 @@ from django.http import HttpResponse
 from io import BytesIO
 from celery.result import AsyncResult
 from ravision.celery import app
+from django.http import JsonResponse
 # Create your views here.
 def index(request):
     return render(request,'quizz/index.html')
@@ -238,21 +239,21 @@ def game(request, id):
         return render(request, 'quizz/game_end.html')
 
     #Si on clique sur soumettre
-    if request.method == 'POST' and request.POST.get('action') == 'attempt':
-        #Finir la tâche
+    if quizz.timeout == True or (request.method == 'POST' and request.POST.get('action') == 'attempt'):
+        quizz.timer_task_id = None  # Réinitialiser l'ID de la tâche
+        quizz.timeout = False
+        quizz.save()
+        user_answer = ""
+        if request.method == 'POST' and request.POST.get('action') == 'attempt':
+            user_answer = simplify(request.POST.get('answer'))
+        correct_answer = simplify(quizz.current_question.answer)
+        is_correct = False
+
+        #si le temps n'a été écoulé
         if quizz.timer_task_id:
-            #print('terminer tâche !!!')
-            #res = AsyncResult(quizz.timer_task_id,app=app)
-            #print(res)
-            #res.revoke(terminate=True)  # Révoquer la tâche Celery
+            is_correct = user_answer == correct_answer
             quizz.timer_task_id = None  # Réinitialiser l'ID de la tâche
             quizz.save()
-
-
-        user_answer = simplify(request.POST.get('answer'))
-        correct_answer = simplify(quizz.current_question.answer)
-        is_correct = user_answer == correct_answer
-
         Test.objects.create(
             date=timezone.now(),
             correct=is_correct,
@@ -298,6 +299,18 @@ def game(request, id):
         'hint': hide(quizz.current_question.answer),
         'task_id':quizz.timer_task_id
     })
+
+def check_quizz_timeout(request, quiz_id):
+    try:
+        quizz = Quizz.objects.get(pk=quiz_id)
+        response_data = {
+            'timeout': quizz.timeout  # Récupère l'état actuel du timeout
+        }
+    except Quizz.DoesNotExist:
+        response_data = {
+            'timeout': False
+        }
+    return JsonResponse(response_data)
 
 def game_end(request):
     return render(request, 'quizz/game_end.html')
@@ -380,7 +393,6 @@ def quizz(request,id):
             _('Remaining questions'):quizz.questions.count(),
             _('Mode'):quizz.mode.name,
             _('Timer mode'):quizz.timer.name,
-            _('Private'):quizz.private,
             _('Hints'):quizz.hints,
             _('Creation date'):quizz.creation_date,
             _('Last update'):quizz.last_change_date

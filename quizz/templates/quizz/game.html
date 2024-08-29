@@ -5,13 +5,35 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("answer").focus();
+        // Vérifie si quizz.timeout est vrai
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+        function checkTimeout() {
+        var checkTimeoutUrl = "{% url 'check_quizz_timeout' quizz.id %}";
+        fetch(checkTimeoutUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.timeout) {
+                    var submitButton = document.getElementById('submit-button');
+                    submitButton.classList.remove('btn-primary');
+                    submitButton.classList.add('btn-danger');  // Change la couleur du bouton
+                    submitButton.textContent = "{% trans 'Time is up! Next question' %}";  // Change le texte du bouton
+                    //submitButton.disabled = true;  // Désactive le bouton
+                } else {
+                    setTimeout(checkTimeout, 1000); // Continue de vérifier toutes les secondes
+                }
+            })
+            .catch(error => console.error('Erreur lors de la vérification du timeout:', error));
+    }
+
+    checkTimeout();  // Démarre la vérification du timeout
     });
 </script>
 
 <h2>{% trans "Quizz" %} : {{ quizz.name }}</h2>
 <p>{{ count }} {% trans "remaining questions" %}</p>
 
-
+{{quizz.timer_task_id}}
 <form method="post" id="quizz-form">
     {% csrf_token %}
     <input type="hidden" name="question_id" value="{{ question.id }}">
@@ -21,7 +43,7 @@
     {{ question.question }}<br />
     {% if quizz.hints %} Hint : {{ hint }}<br /> {% endif %}
     <input type="text" id="answer" name="answer" size="60"><br /><br />
-    <button type="submit" class="btn btn-primary" name="action" value="attempt">{% trans "Submit answer" %}</button>
+    <button type="submit" class="btn btn-primary" name="action" id="submit-button" value="attempt">{% trans "Submit answer" %}</button>
 </form>
 
 {% if task_id %}

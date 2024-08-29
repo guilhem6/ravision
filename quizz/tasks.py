@@ -68,20 +68,18 @@ def handle_timer(self,quiz_id, duration):
         
         while i>0 and task_id==quizz.timer_task_id:
             quizz = Quizz.objects.get(pk=quiz_id)
-            print(f"Secondes restantes : {i}\nId de la tâche : {task_id}\nId de la tâche selon le quizz : {quizz.timer_task_id}" )
+            #print(f"Secondes restantes : {i}\nId de la tâche : {task_id}\nId de la tâche selon le quizz : {quizz.timer_task_id}" )
             time.sleep(1)
             i=i-1
             progress_recorder.set_progress(i, duration)
-
-        # Vérifier si le quiz existe encore après le temps écoulé
-        #quizz.refresh_from_db()
-        #if quizz.questions.exists():
-            # Marquer le quiz comme terminé ou effectuer une action en cas d'expiration
-        #    print("Question suivante.")  # Supprimer ou changer l'état du quiz
-        #else:
-            # Marquer le quiz comme n'ayant plus de timer actif
-        #    quizz.timer_active = False
-        #    quizz.save()
+        if i==0:
+            self.update_state(state='FAILURE', meta={'message': _("Time is up!")})
+            quizz.timeout = True
+            quizz.save()
+            print('Temps écoulé')
+            raise Exception(_("Time is up!"))  # Lever une exception pour marquer l'échec
+            
     except Quizz.DoesNotExist:
-        pass
+        self.update_state(state='FAILURE', meta={'message': _("Quiz does not exist.")})
+        return _("Error: Quiz does not exist.")
     return _("Question suivante !!!")

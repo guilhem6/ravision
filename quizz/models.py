@@ -123,13 +123,14 @@ class Quizz(models.Model):
     mode = models.ForeignKey(QuizzMode, on_delete=models.CASCADE, default=1)
     hints = models.BooleanField(default=True)
     current_question = models.ForeignKey(Question, on_delete=models.SET_NULL, null=True, default=None, related_name='current_question')
-    private = models.BooleanField(default=False)
+    #private = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     creation_date = models.DateField(null=True, default=None, blank=True)
     last_change_date = models.DateField(null=True, default=None, blank=True)
     timer = models.ForeignKey(TimerMode, on_delete=models.CASCADE, default=1)
     #timer_active = models.BooleanField(default=False)
     timer_task_id = models.CharField(max_length=255, null=True, blank=True)  # Stocke l'ID de la tâche Celery
+    timeout = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name + str(self.id)
