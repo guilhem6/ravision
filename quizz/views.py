@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from .models import Subject, Lecture, Question, Test, Quizz, QuizzMode, UserSettings
+from .models import Subject, Lecture, Question, Test, Quizz, QuizzMode, UserSettings, TimerMode
 from .forms import ImportExcelForm, SubjectFilterForm, LectureFilterForm, QuestionFilterForm, QuizzFilterForm, SubjectUpdateForm, LectureUpdateForm, QuestionUpdateForm, QuizzUpdateForm, CreateQuizzForm, UserSettingsForm
-from .tasks import import_task
+from .tasks import import_task, handle_timer
 import random
 from .utils import *
 from django.utils import timezone
@@ -12,7 +12,8 @@ from django.utils.translation import gettext as _
 import pandas as pd
 from django.http import HttpResponse
 from io import BytesIO
-
+from celery.result import AsyncResult
+from ravision.celery import app
 # Create your views here.
 def index(request):
     return render(request,'quizz/index.html')
@@ -236,7 +237,18 @@ def game(request, id):
         quizz.delete()
         return render(request, 'quizz/game_end.html')
 
-    if request.method == 'POST' and request.POST.get('action') == 'attempt' or request.POST.get('timeout') == 'true':
+    #Si on clique sur soumettre
+    if request.method == 'POST' and request.POST.get('action') == 'attempt':
+        #Finir la tâche
+        if quizz.timer_task_id:
+            #print('terminer tâche !!!')
+            #res = AsyncResult(quizz.timer_task_id,app=app)
+            #print(res)
+            #res.revoke(terminate=True)  # Révoquer la tâche Celery
+            quizz.timer_task_id = None  # Réinitialiser l'ID de la tâche
+            quizz.save()
+
+
         user_answer = simplify(request.POST.get('answer'))
         correct_answer = simplify(quizz.current_question.answer)
         is_correct = user_answer == correct_answer
@@ -265,15 +277,26 @@ def game(request, id):
         else:
             quizz.delete()
             return render(request, 'quizz/game_end.html')
+    
+    #S'il n'y a pas de timer, lancer un timer
+    if quizz.timer.name in ['30s', '60s'] and not quizz.timer_task_id:
+        duration = 30 if quizz.timer.name == '30s' else 60
+                # Lancer la tâche et enregistrer l'ID de la tâche
+        task = handle_timer.apply_async((quizz.id, duration))
+        quizz.timer_task_id = task.id  # Stocker l'ID de la tâche
+        quizz.save()
+        #result = handle_timer.delay(quizz.id, duration)
+        #task_id = quizz.timer_task_id
+        request.session['task_id'] = quizz.timer_task_id
 
     quizz.save()
-    
-    return render(request,
-        'quizz/game.html', {
+
+    return render(request, 'quizz/game.html', {
         'quizz': quizz,
         'count': quizz.questions.count(),
         'question': quizz.current_question,
-        'hint': hide(quizz.current_question.answer)
+        'hint': hide(quizz.current_question.answer),
+        'task_id':quizz.timer_task_id
     })
 
 def game_end(request):
@@ -305,6 +328,7 @@ def game_start(request,quizz_type,id=0):
             selected_mode = cleaned_data['mode']
             hints = cleaned_data['hints']
             max_questions = cleaned_data['max_questions']
+            selected_timer = cleaned_data['timer']
 
             if quizz_type == 'subjects' :
                 questions = Question.objects.all().order_by('?')[:max_questions]
@@ -316,7 +340,7 @@ def game_start(request,quizz_type,id=0):
                 questions = selected_question.order_by('?')[:max_questions]
 
             # Créer le quizz sans les questions
-            quizz = Quizz.objects.create(name=quizz_name, mode=selected_mode, hints=hints, user=request.user, creation_date = timezone.now())
+            quizz = Quizz.objects.create(name=quizz_name, mode=selected_mode, hints=hints, user=request.user, creation_date = timezone.now(), timer=selected_timer)
 
             # Associer les questions au quizz
             quizz.questions.set(questions)
@@ -326,7 +350,7 @@ def game_start(request,quizz_type,id=0):
             if request.POST.get('action') == 'save_and_play':
                 return redirect('game',id=quizz.id)
 
-    initial_data = {'quizz_name': title,'max_questions':total_size,'mode':QuizzMode.objects.get(name=_("Normal"))}
+    initial_data = {'quizz_name': title,'max_questions':total_size,'mode':QuizzMode.objects.get(name="Normal"),'timer':TimerMode.objects.get(name="No timer")}
     form = CreateQuizzForm(initial=initial_data)
     return render(request, 'quizz/game_start.html',{'form':form, 'quizz_type':quizz_type, 'object_id':id, 'title': title})
 

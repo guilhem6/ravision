@@ -1,7 +1,7 @@
 from django import forms
 from urllib.parse import urlencode
 from .models import Subject, Lecture, Question, Quizz, QuizzMode, UserSettings, TimerMode
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 
 class ImportExcelForm(forms.Form):
     name = forms.CharField(label=_('Name'), required=False)

@@ -11,9 +11,6 @@
 <h2>{% trans "Quizz" %} : {{ quizz.name }}</h2>
 <p>{{ count }} {% trans "remaining questions" %}</p>
 
-{% if quizz.timer.name != 'No timer' %}
-    <p id="timer"></p> <!-- Ajout de l'affichage du timer -->
-{% endif %}
 
 <form method="post" id="quizz-form">
     {% csrf_token %}
@@ -27,31 +24,18 @@
     <button type="submit" class="btn btn-primary" name="action" value="attempt">{% trans "Submit answer" %}</button>
 </form>
 
-{% if quizz.timer.name != 'No timer' %}
+{% if task_id %}
+<br />
+<div class='progress-wrapper'>
+        <div id='progress-bar' class='progress-bar' style="background-color: #68a9ef; width: 0%;">&nbsp;</div>
+</div>
+<div id="progress-bar-message" hidden></div>
+
 <script>
-    let timerElement = document.getElementById('timer');
-    let timerValue = '{{ quizz.timer.name }}';
-    let timeLeft;
-
-    if (timerValue === '30s') {
-        timeLeft = 30;
-    } else if (timerValue === '60s') {
-        timeLeft = 60;
-    }
-
-    function updateTimer() {
-        if (timeLeft > 0) {
-            timerElement.textContent = "Temps restant : " + timeLeft + "s";
-            timeLeft--;
-        } else {
-            document.getElementById('timeout').value = 'true'; // Indiquer que le temps est écoulé
-            document.getElementById('quizz-form').submit(); // Soumettre automatiquement le formulaire
-        }
-    }
-
-    if (timeLeft) {
-        setInterval(updateTimer, 1000); // Décompte chaque seconde
-    }
+    document.addEventListener("DOMContentLoaded", function () {
+    var progressUrl = "{% url 'celery_progress:task_status' task_id %}";
+    CeleryProgressBar.initProgressBar(progressUrl);
+    });
 </script>
 {% endif %}
 

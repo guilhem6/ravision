@@ -80,7 +80,7 @@ class Test(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     expected_answer = models.CharField(max_length=255, default="")
     given_answer = models.CharField(max_length=255, default="")
-    answer_time = models.FloatField(null=True, default=None)
+    #answer_time = models.FloatField(null=True, default=None)
 
     def __str__(self):
         if self.correct:
@@ -128,6 +128,8 @@ class Quizz(models.Model):
     creation_date = models.DateField(null=True, default=None, blank=True)
     last_change_date = models.DateField(null=True, default=None, blank=True)
     timer = models.ForeignKey(TimerMode, on_delete=models.CASCADE, default=1)
+    #timer_active = models.BooleanField(default=False)
+    timer_task_id = models.CharField(max_length=255, null=True, blank=True)  # Stocke l'ID de la tâche Celery
 
     def __str__(self):
         return self.name + str(self.id)
@@ -139,6 +141,7 @@ class Quizz(models.Model):
     def save(self, *args, **kwargs):
         self.last_change_date = timezone.now()
         super().save(*args, **kwargs)
+
 
 class UserSettings(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

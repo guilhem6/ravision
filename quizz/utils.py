@@ -312,3 +312,4 @@ def get_info_chart(request,info,tests):
     chart = get_custom_scores(user_tests, request)
     info.update(all_test_count(tests,user_tests))
     return info, chart
+
