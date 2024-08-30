@@ -2,52 +2,75 @@
 {% load i18n %}
 {% block content %}
 
-<h2><i class="bi patch-question"></i>{% trans "Generate Questions for" %} {{ lecture.name }}</h2>
-
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">{% trans "Generate Questions" %}</button>
-</form>
-
-{% if questions %}
-
-
-
-<br />
-<h3>{% trans "Generated Questions" %}</h3>
-<br />
-<button class="btn btn-secondary" onclick="addAllQuestions()">{% trans "Add All" %}</button>
-<br />
+<h2><i class="bi bi-patch-question"></i> {% trans "Generate questions for" %} {{ lecture.name }}</h2>
 <table class="table">
-    <thead>
-        <tr>
-            <th>
-                {% trans "Question" %}
-            </th>
-            <th>
-                {% trans "Answer" %}
-            </th>
-            <th>
-            </th>
-            <th>
-            </th>
-        </tr>
-    </thead>
     <tbody>
-        {% for question in questions %}
-        <tr class="question-item">
-            <td>{{ question.question }}</td>
-            <td>{{ question.answer }}</td>
-            <td><button class="btn btn-success" onclick="addQuestion('{{ question.question }}', '{{ question.answer }}');removeQuestion(this)">{% trans "Add" %}</button></td>
-            <td><button class="btn btn-danger" onclick="removeQuestion(this)">{% trans "Remove" %}</button></td>
-        </tr>
-        {% endfor %}
+        <form method="POST" id="generate-questions-form">
+            {% csrf_token %}
+            {% for field in form %}
+            <tr>
+                <th>
+                    {{ field.label_tag }}</th>
+                <td>{{ field }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th></th>
+                <td>
+                    <button type="button" id="generate-btn" class="btn btn-primary" onclick="generate()">
+                        <i class="bi bi-patch-question-fill"></i> {% trans "Generate questions" %}
+                    </button>
+                                        <!-- Conteneur pour le message de chargement -->
+                    <div id="loading-message" class="mt-3" style="display: none;">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        {% trans "Generating questions..." %}
+                    </div>
+                </td>
+            </tr>
+        </form>
     </tbody>
 </table>
-{% endif %}
+
+<div id="questions-container">
+    <!-- Les questions générées par AJAX apparaîtront ici -->
+</div>
+
+
 
 <script>
+
+function generate() {
+    // Afficher le message de chargement
+    document.getElementById('loading-message').style.display = 'block';
+    document.getElementById('generate-btn').style.display = 'none';
+    // Récupérer les données du formulaire
+    var form = document.getElementById('generate-questions-form');
+    var formData = new FormData(form);
+
+    // Envoyer la requête AJAX
+    fetch("{% url 'generate' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.text())  // Utilisez .text() au lieu de .json() car la réponse est un HTML
+    .then(html => {
+        // Masquer le message de chargement
+        document.getElementById('loading-message').style.display = 'none';
+        document.getElementById('generate-btn').style.display = 'block';
+
+        // Afficher les questions générées dans le conteneur prévu
+        document.getElementById('questions-container').innerHTML = html;
+    })
+    .catch(error => {
+        console.error('Erreur lors de la génération des questions:', error);
+        document.getElementById('loading-message').style.display = 'none';
+    });
+}
+
+
     function removeQuestion(element) {
         // Supprimez l'élément de la page
         element.closest('.question-item').remove();
@@ -56,7 +79,7 @@
     function addQuestion(question, answer) {
         var lectureId = "{{ lecture.id }}";  // Assurez-vous que vous passez l'ID de la lecture
         var csrfToken = '{{ csrf_token }}';
-
+        console.log(question);
         fetch("{% url 'add_question' %}", {
             method: 'POST',
             headers: {
@@ -81,46 +104,51 @@
     }
 
     function addAllQuestions() {
-        var lectureId = "{{ lecture.id }}";  // Assurez-vous que vous passez l'ID de la lecture
-        var csrfToken = '{{ csrf_token }}';
-        var questions = [];
+    var lectureId = "{{ lecture.id }}";  // Assurez-vous que vous passez l'ID de la lecture
+    var csrfToken = '{{ csrf_token }}';
+    var questions = [];
 
-        // Collecter toutes les questions et réponses à partir de la table
-        document.querySelectorAll('.question-item').forEach(function (row) {
-            var questionText = row.querySelector('td:nth-child(1)').innerText;
-            var answerText = row.querySelector('td:nth-child(2)').innerText;
-            questions.push(questionText + '||' + answerText);
-        });
+    // Collecter toutes les questions et réponses à partir de la table
+    document.querySelectorAll('.question-item').forEach(function (row) {
+        var questionText = row.querySelector('td:nth-child(1)').innerText;
+        var answerText = row.querySelector('td:nth-child(2)').innerText;
+        questions.push(questionText + '||' + answerText);
+    });
 
-        fetch("{% url 'add_all_questions' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': csrfToken
-            },
-            body: new URLSearchParams({
-                'questions': questions,
-                'lecture_id': lectureId
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                console.log("All questions added successfully:", data.message);
-                clearAllQuestions();
-            } else {
-                console.error("Error adding all questions:", data.message);
-            }
-        })
-        .catch(error => console.error('Error during fetch:', error));
+    // Créer le corps de la requête pour le fetch
+    var body = new URLSearchParams();
+    body.append('lecture_id', lectureId);
+    questions.forEach(function(question) {
+        body.append('questions[]', question);  // Ajouter chaque question individuellement
+    });
 
-        function clearAllQuestions() {
+    fetch("{% url 'add_all_questions' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken
+        },
+        body: body.toString()  // Convertir en chaîne pour l'envoyer correctement
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            console.log("All questions added successfully:", data.message);
+            clearAllQuestions();
+        } else {
+            console.error("Error adding all questions:", data.message);
+        }
+    })
+    .catch(error => console.error('Error during fetch:', error));
+
+    function clearAllQuestions() {
         // Trouver toutes les lignes de questions et les supprimer
         document.querySelectorAll('.question-item').forEach(function (row) {
             row.remove();
         });
     }
-    }
+}
+
 </script>
 
 {% endblock %}

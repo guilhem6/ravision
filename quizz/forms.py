@@ -97,15 +97,15 @@ class UserSettingsForm(forms.ModelForm):
         }
 
 class QuestionGenerationForm(forms.Form):
-    num_questions = forms.IntegerField(label="Nombre de questions à générer", min_value=1, max_value=20, initial=5)
+    num_questions = forms.IntegerField(label="Nombre de questions", min_value=1, max_value=20, initial=5)
     difficulty = forms.ChoiceField(
-        label="Niveau de difficulté",
+        label=_("Difficulté"),
         choices=[('easy', 'Facile'), ('medium', 'Moyen'), ('hard', 'Difficile')],
         initial='medium'
     )
-    size_answers = forms.IntegerField(label="Nombre maximal de caractère des réponses", min_value=1, max_value=200, initial=20)
+    size_answers = forms.IntegerField(label="Taille maximale des réponses", min_value=1, max_value=200, initial=20)
     prompt = forms.CharField(
-        label="Prompt pour la génération",
+        label=_("Thème"),
         max_length=500,
         widget=forms.Textarea(attrs={'rows': 3})
     )

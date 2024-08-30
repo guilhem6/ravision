@@ -501,7 +501,13 @@ def download_excel(request, id):
 def generate_questions(request, lecture_id):
     lecture = get_object_or_404(Lecture, pk=lecture_id)
     default_prompt = f"{lecture.subject.name} - {lecture.name}."
+    form = QuestionGenerationForm(initial={'prompt': default_prompt})
+    return render(request, 'quizz/generate_questions.html', {'form': form, 'lecture': lecture})
 
+    
+@login_required
+@csrf_exempt
+def generate(request):
     if request.method == 'POST':
         form = QuestionGenerationForm(request.POST)
         if form.is_valid():
@@ -513,13 +519,6 @@ def generate_questions(request, lecture_id):
             # Appel à l'API OpenAI pour générer des questions
             openai_prompt = f"Générer {num_questions} questions-réponses sur le thème de {prompt}, avec des réponses de maximum {size_answers} caractères.{prompt}\nNiveau de difficulté : {difficulty}\nSous la forme suivante :\nQ: ...\nA: ..."
             
-            #response = openai.Completion.create(
-            #    engine="text-davinci-004",
-            #    prompt=openai_prompt,
-            ##    max_tokens=150 * num_questions,
-            #    n=1
-            #)
-
             chat_completion = client.chat.completions.create(
                 messages=[
                     {
@@ -536,16 +535,12 @@ def generate_questions(request, lecture_id):
             questions_and_answers = parse_questions(generated_text)
             print(questions_and_answers)
 
-            return render(request, 'quizz/generate_questions.html', {
+            return render(request, 'quizz/generated_questions.html', {
                 'form': form,
                 'questions': questions_and_answers,
                 'lecture': lecture
             })
-
-    else:
-        form = QuestionGenerationForm(initial={'prompt': default_prompt})
-
-    return render(request, 'quizz/generate_questions.html', {'form': form, 'lecture': lecture})
+    return render(request, 'quizz/error.html')
 
 def parse_questions(generated_text):
     """
@@ -590,6 +585,7 @@ def add_all_questions(request):
     if request.method == 'POST':
         questions = request.POST.getlist('questions[]')
         lecture_id = request.POST.get('lecture_id')
+        print(questions)
 
         try:
             lecture = Lecture.objects.get(id=lecture_id)
