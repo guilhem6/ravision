@@ -33,7 +33,6 @@
 <h2>{% trans "Quizz" %} : {{ quizz.name }}</h2>
 <p>{{ count }} {% trans "remaining questions" %}</p>
 
-{{quizz.timer_task_id}}
 <form method="post" id="quizz-form">
     {% csrf_token %}
     <input type="hidden" name="question_id" value="{{ question.id }}">

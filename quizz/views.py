@@ -248,23 +248,23 @@ def game(request, id):
     else:
         quizz.delete()
         return render(request, 'quizz/game_end.html')
-
+    
     #Si on clique sur soumettre
-    if quizz.timeout == True or (request.method == 'POST' and request.POST.get('action') == 'attempt'):
-        quizz.timer_task_id = None  # Réinitialiser l'ID de la tâche
-        quizz.timeout = False
-        quizz.save()
-        user_answer = ""
-        if request.method == 'POST' and request.POST.get('action') == 'attempt':
-            user_answer = simplify(request.POST.get('answer'))
+    if request.method == 'POST' and request.POST.get('action') == 'attempt':
+        user_answer = simplify(request.POST.get('answer'))
         correct_answer = simplify(quizz.current_question.answer)
         is_correct = False
 
         #si le temps n'a été écoulé
-        if quizz.timer_task_id:
+        if not quizz.timeout or quizz.timer.name=="No timer":
             is_correct = user_answer == correct_answer
-            quizz.timer_task_id = None  # Réinitialiser l'ID de la tâche
-            quizz.save()
+            #quizz.timer_task_id = None  # Réinitialiser l'ID de la tâche
+            #quizz.timeout = False
+            #quizz.save()
+
+         # Réinitialiser l'ID de la tâche
+        quizz.save()
+
         Test.objects.create(
             date=timezone.now(),
             correct=is_correct,
@@ -274,12 +274,18 @@ def game(request, id):
             given_answer = user_answer
         ).save()
 
-        if is_correct:
+        if quizz.timeout:
+            messages.error(request, f"Too late! It was" + f": {quizz.current_question.answer}")
+        elif is_correct:
             messages.success(request, f"{quizz.current_question.answer} " + _("is a good answer!"))
         else:
             messages.error(request, f"{user_answer} "+ _("is a wrong answer, it was") + f": {quizz.current_question.answer}")
             if quizz.mode.name == "Error-free":
                 quizz.questions.clear()
+
+        quizz.timer_task_id = None 
+        quizz.timeout=False
+        quizz.save()
 
         if quizz.mode.name != "Error-free" or is_correct:
             quizz.questions.remove(quizz.current_question)
@@ -361,7 +367,7 @@ def game_start(request,quizz_type,id=0):
             elif quizz_type == 'lecture' :
                 questions = Question.objects.filter(lecture=selected_lecture).order_by('?')[:max_questions]
             elif quizz_type == 'question':
-                questions = selected_question.order_by('?')[:max_questions]
+                questions = Question.objects.filter(id=selected_question.id)
 
             # Créer le quizz sans les questions
             quizz = Quizz.objects.create(name=quizz_name, mode=selected_mode, hints=hints, user=request.user, creation_date = timezone.now(), timer=selected_timer)
