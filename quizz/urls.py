@@ -27,4 +27,7 @@ urlpatterns = [
     path('download_excel/<int:id>', views.download_excel, name='download_excel'),
     path('settings', views.settings, name='settings'),
     path('check_quizz_timeout/<int:quiz_id>/', views.check_quizz_timeout, name='check_quizz_timeout'),
+    path('generate_questions/<int:lecture_id>/', views.generate_questions, name='generate_questions'),
+    path('add-question/', views.add_question, name='add_question'),
+    path('add-all-questions/', views.add_all_questions, name='add_all_questions'),
 ]

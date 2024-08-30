@@ -60,7 +60,7 @@ color: #ccc;
 }
 
 body.dark-mode a {
-color: #4a90e2;
+color: #9dc3ee;
 }
 
 body.dark-mode a:hover {
@@ -150,9 +150,6 @@ color: #ccc;
 border-top: 1px solid #444;
 }
 
-body.dark-mode .a {
-    color:#fff;
-}
 
 
     .label{

@@ -1,0 +1,126 @@
+{% extends 'quizz/base.html' %}
+{% load i18n %}
+{% block content %}
+
+<h2><i class="bi patch-question"></i>{% trans "Generate Questions for" %} {{ lecture.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">{% trans "Generate Questions" %}</button>
+</form>
+
+{% if questions %}
+
+
+
+<br />
+<h3>{% trans "Generated Questions" %}</h3>
+<br />
+<button class="btn btn-secondary" onclick="addAllQuestions()">{% trans "Add All" %}</button>
+<br />
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                {% trans "Question" %}
+            </th>
+            <th>
+                {% trans "Answer" %}
+            </th>
+            <th>
+            </th>
+            <th>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for question in questions %}
+        <tr class="question-item">
+            <td>{{ question.question }}</td>
+            <td>{{ question.answer }}</td>
+            <td><button class="btn btn-success" onclick="addQuestion('{{ question.question }}', '{{ question.answer }}');removeQuestion(this)">{% trans "Add" %}</button></td>
+            <td><button class="btn btn-danger" onclick="removeQuestion(this)">{% trans "Remove" %}</button></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<script>
+    function removeQuestion(element) {
+        // Supprimez l'élément de la page
+        element.closest('.question-item').remove();
+    }
+
+    function addQuestion(question, answer) {
+        var lectureId = "{{ lecture.id }}";  // Assurez-vous que vous passez l'ID de la lecture
+        var csrfToken = '{{ csrf_token }}';
+
+        fetch("{% url 'add_question' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: new URLSearchParams({
+                'question': question,
+                'answer': answer,
+                'lecture_id': lectureId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log("Question added successfully:", data.message);
+            } else {
+                console.error("Error adding question:", data.message);
+            }
+        })
+        .catch(error => console.error('Error during fetch:', error));
+    }
+
+    function addAllQuestions() {
+        var lectureId = "{{ lecture.id }}";  // Assurez-vous que vous passez l'ID de la lecture
+        var csrfToken = '{{ csrf_token }}';
+        var questions = [];
+
+        // Collecter toutes les questions et réponses à partir de la table
+        document.querySelectorAll('.question-item').forEach(function (row) {
+            var questionText = row.querySelector('td:nth-child(1)').innerText;
+            var answerText = row.querySelector('td:nth-child(2)').innerText;
+            questions.push(questionText + '||' + answerText);
+        });
+
+        fetch("{% url 'add_all_questions' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken
+            },
+            body: new URLSearchParams({
+                'questions': questions,
+                'lecture_id': lectureId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log("All questions added successfully:", data.message);
+                clearAllQuestions();
+            } else {
+                console.error("Error adding all questions:", data.message);
+            }
+        })
+        .catch(error => console.error('Error during fetch:', error));
+
+        function clearAllQuestions() {
+        // Trouver toutes les lignes de questions et les supprimer
+        document.querySelectorAll('.question-item').forEach(function (row) {
+            row.remove();
+        });
+    }
+    }
+</script>
+
+{% endblock %}

@@ -147,6 +147,13 @@
                 </a>
                 <br /><br />
                 {% endif %}
+
+                {% if generate %}
+                <a href="{% url 'generate_questions' object.id %}" class="btn btn-primary">
+                    <i class="bi patch-question-fill"></i> {%trans "Generate questions"%}
+                </a>
+                <br /><br />
+                {% endif %}
                 
                 {%if urls.delete %}
 

@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from .models import Subject, Lecture, Question, Test, Quizz, QuizzMode, UserSettings, TimerMode
-from .forms import ImportExcelForm, SubjectFilterForm, LectureFilterForm, QuestionFilterForm, QuizzFilterForm, SubjectUpdateForm, LectureUpdateForm, QuestionUpdateForm, QuizzUpdateForm, CreateQuizzForm, UserSettingsForm
+from .forms import ImportExcelForm, SubjectFilterForm, LectureFilterForm, QuestionFilterForm, QuizzFilterForm, SubjectUpdateForm, LectureUpdateForm, QuestionUpdateForm, QuizzUpdateForm, CreateQuizzForm, UserSettingsForm, QuestionGenerationForm
 from .tasks import import_task, handle_timer
 import random
 from .utils import *
@@ -12,9 +12,19 @@ from django.utils.translation import gettext as _
 import pandas as pd
 from django.http import HttpResponse
 from io import BytesIO
-from celery.result import AsyncResult
 from ravision.celery import app
 from django.http import JsonResponse
+from openai import OpenAI
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+
+client = OpenAI(
+    # This is the default and can be omitted
+    api_key='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')
+
+
+
 # Create your views here.
 def index(request):
     return render(request,'quizz/index.html')
@@ -148,6 +158,7 @@ def lecture(request,id):
     fields = {'question':'Question','answer':'Réponse'}
     action = 'lecture'
     context = prepare_render_context(action, filterForm, questions, request, fields, object=lecture, childurl='question', deleteurl='delete_lecture', updateForm=updateForm, addForm=addForm, sort_by='question', parenturl='subject', parent=lecture.subject, chart=chart, info=info)
+    context.update({'generate':True})
     return update_page(request,chart,action,context)
 
 def question(request,id):
@@ -486,6 +497,118 @@ def download_excel(request, id):
     response['Content-Disposition'] = f'attachment; filename={subject.short_name}.xlsx'
 
     return response
+
+def generate_questions(request, lecture_id):
+    lecture = get_object_or_404(Lecture, pk=lecture_id)
+    default_prompt = f"{lecture.subject.name} - {lecture.name}."
+
+    if request.method == 'POST':
+        form = QuestionGenerationForm(request.POST)
+        if form.is_valid():
+            num_questions = form.cleaned_data['num_questions']
+            difficulty = form.cleaned_data['difficulty']
+            prompt = form.cleaned_data['prompt']
+            size_answers = form.cleaned_data['size_answers']
+
+            # Appel à l'API OpenAI pour générer des questions
+            openai_prompt = f"Générer {num_questions} questions-réponses sur le thème de {prompt}, avec des réponses de maximum {size_answers} caractères.{prompt}\nNiveau de difficulté : {difficulty}\nSous la forme suivante :\nQ: ...\nA: ..."
+            
+            #response = openai.Completion.create(
+            #    engine="text-davinci-004",
+            #    prompt=openai_prompt,
+            ##    max_tokens=150 * num_questions,
+            #    n=1
+            #)
+
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "user",
+                        "content": openai_prompt,
+                    }
+                ],
+                model="gpt-3.5-turbo",
+            )
+
+            # Traitement de la réponse de l'API pour obtenir les questions
+            generated_text = chat_completion.choices[0].message.content
+            print(generated_text)
+            questions_and_answers = parse_questions(generated_text)
+            print(questions_and_answers)
+
+            return render(request, 'quizz/generate_questions.html', {
+                'form': form,
+                'questions': questions_and_answers,
+                'lecture': lecture
+            })
+
+    else:
+        form = QuestionGenerationForm(initial={'prompt': default_prompt})
+
+    return render(request, 'quizz/generate_questions.html', {'form': form, 'lecture': lecture})
+
+def parse_questions(generated_text):
+    """
+    Fonction pour analyser le texte généré par l'API OpenAI et extraire les questions et réponses.
+    """
+    questions = []
+    for line in generated_text.split("\n"):
+        if line.startswith("Q:"):
+            question_text = line[2:].strip()
+            questions.append({'question': question_text, 'answer': ''})
+        elif line.startswith("A:") and questions:
+            answer_text = line[2:].strip()
+            questions[-1]['answer'] = answer_text
+    return questions
+
+@login_required
+@csrf_exempt
+def add_question(request):
+    if request.method == 'POST':
+        question_text = request.POST.get('question')
+        answer_text = request.POST.get('answer')
+        lecture_id = request.POST.get('lecture_id')
+
+        try:
+            lecture = Lecture.objects.get(id=lecture_id)
+            question = Question.objects.create(
+                question=question_text,
+                answer=answer_text,
+                lecture=lecture,
+                user=request.user
+            )
+            return JsonResponse({'status': 'success', 'message': 'Question added', 'question_id': question.id})
+        except Lecture.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Lecture not found'}, status=404)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+
+@login_required
+@csrf_exempt
+def add_all_questions(request):
+    if request.method == 'POST':
+        questions = request.POST.getlist('questions[]')
+        lecture_id = request.POST.get('lecture_id')
+
+        try:
+            lecture = Lecture.objects.get(id=lecture_id)
+            for question_data in questions:
+                question_text, answer_text = question_data.split('||')
+                Question.objects.create(
+                    question=question_text,
+                    answer=answer_text,
+                    lecture=lecture,
+                    user=request.user
+                )
+
+            return JsonResponse({'status': 'success', 'message': 'All questions added'})
+        except Lecture.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Lecture not found'}, status=404)
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+
 
 def settings(request):
     user_settings, created = UserSettings.objects.get_or_create(user=request.user)
