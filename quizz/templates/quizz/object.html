@@ -45,6 +45,62 @@
     <input type="checkbox" id="show_incorrect_with_hint" name="show_incorrect_with_hint" value="1"
         {% if request.GET.show_incorrect_with_hint in defaultvis %}checked{% endif %}
         onchange="submitFormAjax();toggleLabelColor('#label-iwi','label-orange');">
+
+        <div class="accordion" id="filterAccordion5">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="filterHeading5">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse5" aria-expanded="true" aria-controls="filterCollapse5">
+                        {%trans "Other options"%}
+                    </button>
+                </h2>
+                <div id="filterCollapse5" class="accordion-collapse collapse" aria-labelledby="filterHeading5" data-bs-parent="#filterAccordion5">
+                    <div class="accordion-body">
+                        <input type="hidden" name="with_ai_check" value="0">
+                        <label for="with_ai_check" id="label-wia" class="btn label {% if request.GET.with_ai_check in defaultvis %}label-white{% else %}label-grey{% endif %}">
+                            {% trans "show ai check" %}</label>
+                        <input type="checkbox" id="with_ai_check" name="with_ai_check" value="1"
+                            {% if request.GET.with_ai_check in defaultvis %}checked{% endif %}
+                            onchange="submitFormAjax();toggleLabelColor('#label-wia','label-white');">
+                
+                        <br />
+                        <input type="hidden" name="without_ai_check" value="0">
+                    <label for="without_ai_check" id="label-woa" class="btn label {% if request.GET.without_ai_check in defaultvis %}label-white{% else %}label-grey{% endif %}">
+                        {% trans "show without ai check" %}</label>
+                    <input type="checkbox" id="without_ai_check" name="without_ai_check" value="1"
+                        {% if request.GET.without_ai_check in defaultvis %}checked{% endif %}
+                        onchange="submitFormAjax();toggleLabelColor('#label-woa','label-white');">
+                
+                        <br />
+                        <input type="hidden" name="without_timer" value="0">
+                    <label for="without_timer" id="label-wot" class="btn label {% if request.GET.without_timer in defaultvis %}label-white{% else %}label-grey{% endif %}">
+                        {% trans "show without timer" %}</label>
+                    <input type="checkbox" id="without_timer" name="without_timer" value="1"
+                        {% if request.GET.without_timer in defaultvis %}checked{% endif %}
+                        onchange="submitFormAjax();toggleLabelColor('#label-wot','label-white');">
+                    <br />
+                
+                    <input type="hidden" name="s30_timer" value="0">
+                    <label for="s30_timer" id="label-30t" class="btn label {% if request.GET.s30_timer in defaultvis %}label-white{% else %}label-grey{% endif %}">
+                        {% trans "show with 30s timer" %}</label>
+                    <input type="checkbox" id="s30_timer" name="s30_timer" value="1"
+                        {% if request.GET.s30_timer in defaultvis %}checked{% endif %}
+                        onchange="submitFormAjax();toggleLabelColor('#label-30t','label-white');">
+                
+                        <br />
+                
+                        <input type="hidden" name="s60_timer" value="0">
+                        <label for="s60_timer" id="label-60t" class="btn label {% if request.GET.s60_timer in defaultvis %}label-white{% else %}label-grey{% endif %}">
+                            {% trans "show with 60s timer" %}</label>
+                        <input type="checkbox" id="s60_timer" name="s60_timer" value="1"
+                            {% if request.GET.s60_timer in defaultvis %}checked{% endif %}
+                            onchange="submitFormAjax();toggleLabelColor('#label-60t','label-white');">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <br />
+    <br />
 </form>
 </div>
 
@@ -150,7 +206,7 @@
 
                 {% if generate %}
                 <a href="{% url 'generate_questions' object.id %}" class="btn btn-primary">
-                    <i class="bi patch-question-fill"></i> {%trans "Generate questions"%}
+                    <i class="bi bi-patch-question-fill"></i> {%trans "Generate questions"%}
                 </a>
                 <br /><br />
                 {% endif %}

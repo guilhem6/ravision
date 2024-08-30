@@ -7,6 +7,7 @@ from datetime import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.utils.translation import gettext as _
+from matplotlib.ticker import MaxNLocator
   
 def get_graph():
     buffer = BytesIO()
@@ -49,6 +50,9 @@ def get_plot(x, y_correct_with_hint, y_correct_without_hint, y_incorrect_with_hi
     plt.tick_params(axis='both', which='both', colors=tick_color)  # Couleur des ticks
     plt.gca().spines['top'].set_visible(False)  # Enlever les bordures supérieures
     plt.gca().spines['right'].set_visible(False)  # Enlever les bordures droites
+
+    # Définir les ticks de l'axe y pour n'afficher que des valeurs entières
+    plt.gca().yaxis.set_major_locator(MaxNLocator(integer=True))
     plt.tight_layout()
     
     # Sauvegarder le graphique dans un buffer pour le retourner en tant que graphique
@@ -133,6 +137,21 @@ def get_custom_scores(tests, request):
     show_correct_with_hint = (request.GET.get('show_correct_with_hint') in values)
     show_incorrect_without_hint = (request.GET.get('show_incorrect_without_hint') in values)
     show_incorrect_with_hint = (request.GET.get('show_incorrect_with_hint') in values)
+    with_ai_check = (request.GET.get('with_ai_check') in values)
+    without_ai_check = (request.GET.get('without_ai_check') in values)
+    without_timer = (request.GET.get('without_timer') in values)
+    s30_timer = (request.GET.get('s30_timer') in values)
+    s60_timer = (request.GET.get('s60_timer') in values)
+    if not with_ai_check:
+        tests = tests.exclude(aicheck=False)
+    if not without_ai_check:
+        tests = tests.exclude(aicheck=True)
+    if not without_timer:
+        tests = tests.exclude(timer__name='No timer')
+    if not s30_timer:
+        tests = tests.exclude(timer__name='30s')
+    if not s60_timer:
+        tests = tests.exclude(timer__name='60s')
     return get_scores(tests, percentage, show_correct_without_hint, show_correct_with_hint, show_incorrect_without_hint, show_incorrect_with_hint, request.dark_mode)
 
 

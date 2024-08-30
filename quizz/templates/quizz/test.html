@@ -2,10 +2,10 @@
 {% load i18n %}
 {% block content %}
 
-<h2><i class="bi bi-check-square"></i>{%trans Attempt%} {{object.id}} ({{parent.question}})</h2>
-
-<h4>Correct : {{object.as_dict.correct}}</h4>
-<h4>Avec indices : {{object.as_dict.hints}}</h4>
+<h2><i class="bi bi-check-square"></i> {%trans "Attempt"%} {{object.id}} (Question : {% if parent.question|length > 50 %}
+    {{ parent.question|slice:":50" }}...
+{% else %}
+    {{ parent.question }}{%endif%})</h2>
 
 {% include 'quizz/object.html' %}
 

@@ -2,7 +2,11 @@
 {% load i18n %}
 {% block content %}
 
-<h2><i class="bi bi bi-question-circle"></i> {%trans "Question"%} : {{object.question}}</h2>
+<h2><i class="bi bi bi-question-circle"></i> {% if object.question|length > 70 %}
+    {{ object.question|slice:":70" }}...
+{% else %}
+    {{ object.question }}
+{% endif %}</h2>
 
 {% include 'quizz/object.html' %}
 

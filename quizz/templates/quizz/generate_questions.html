@@ -48,7 +48,7 @@ function generate() {
     var formData = new FormData(form);
 
     // Envoyer la requête AJAX
-    fetch("{% url 'generate' %}", {
+    fetch("{% url 'generate' lecture.id%}", {
         method: 'POST',
         body: formData,
         headers: {

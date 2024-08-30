@@ -39,7 +39,7 @@
     <input type="hidden" name="timeout" value="false" id="timeout"> <!-- Champ caché pour indiquer l'expiration du temps -->
     <strong>{{ question.lecture.subject.name }}<br/>
     {{ question.lecture.name }}</strong><br/><br/>
-    {{ question.question }}<br />
+    {{ question.question|linebreaks }}<br />
     {% if quizz.hints %} Hint : {{ hint }}<br /> {% endif %}
     <input type="text" id="answer" name="answer" size="60"><br /><br />
     <button type="submit" class="btn btn-primary" name="action" id="submit-button" value="attempt">{% trans "Submit answer" %}</button>

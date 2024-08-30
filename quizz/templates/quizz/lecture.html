@@ -4,6 +4,73 @@
 
 <h2><i class="bi bi-journal-bookmark"></i> {%trans "Lecture"%} : {{object.name}}</h2>
 
+<script>
+    function generateContent(lectureId) {
+        
+        var csrfToken = '{{ csrf_token }}';
+        console.log(lectureId);
+        // Affiche le message de chargement
+        document.getElementById('loading-message').style.display = 'block';
+        document.getElementById('generation-button').style.display = 'none';
+        document.getElementById('generated-content').style.display = 'none';
+    
+        // Envoie la requête AJAX
+        fetch("{% url 'generate_content' object.id %}", {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Masque le message de chargement
+            document.getElementById('loading-message').style.display = 'none';
+            document.getElementById('generation-button').style.display = 'block';
+            document.getElementById('generated-content').style.display = 'block';
+    
+            if (data.status === 'success') {
+                // Affiche le contenu généré
+                document.getElementById('generated-content').innerText = data.content;
+            } else {
+                console.error("Erreur lors de la génération du contenu:", data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de la requête AJAX:', error);
+            document.getElementById('loading-message').style.display = 'none';
+        });
+    }
+    </script>
+
+<div class="accordion" id="filterAccordion4">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="filterHeading4">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse4" aria-expanded="true" aria-controls="filterCollapse4">
+                <i class="bi bi-file-text"></i>&nbsp;{%trans "Content"%}
+            </button>
+        </h2>
+        <div id="filterCollapse4" class="accordion-collapse collapse" aria-labelledby="filterHeading4" data-bs-parent="#filterAccordion4">
+            <div class="accordion-body">
+                    <div id="generated-content" style="display:bock;">
+                        <!-- Contenu généré apparaîtra ici -->
+                        {{object.content|linebreaks}}
+                    </div>
+                    
+                    <div id="loading-message" class="mt-3" style="display: none;">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        {% trans "Generating new content..." %}
+                    </div>
+                    <br/>
+                    <a id ="generation-button" class="btn btn-primary" onclick="generateContent('{{ object.id }}')">
+                        <i class="bi bi-patch-plus-fill"></i> {% trans "Generate new content" %}
+                    </a>
+                    
+            </div>
+        </div>
+    </div>
+</div>
+<br />
 {% include 'quizz/object.html' %}
 
 {% endblock %}

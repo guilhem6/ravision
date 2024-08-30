@@ -34,6 +34,7 @@ class Lecture(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     creation_date = models.DateField(null=True, default=None, blank=True)
     last_change_date = models.DateField(null=True, default=None, blank=True)
+    content = models.CharField(max_length=4095, default="")
 
     def __str__(self):
         return self.name
@@ -72,6 +73,11 @@ class Question(models.Model):
         self.lecture.save()
         super().save(*args, **kwargs)
 
+class TimerMode(models.Model):
+    name = models.CharField(max_length = 255,default="")
+    def __str__(self):
+        return self.name
+
 class Test(models.Model):
     date = models.DateField(null=True, default=None, blank=True)
     correct = models.BooleanField(default=False)
@@ -80,7 +86,9 @@ class Test(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     expected_answer = models.CharField(max_length=255, default="")
     given_answer = models.CharField(max_length=255, default="")
+    timer = models.ForeignKey(TimerMode, on_delete=models.CASCADE, default=1)
     #answer_time = models.FloatField(null=True, default=None)
+    aicheck = models.BooleanField(default=False)
 
     def __str__(self):
         if self.correct:
@@ -90,15 +98,20 @@ class Test(models.Model):
 
     def as_dict(self):
         correct = 'NON'
-        hints = 'OUI'
+        hints = 'NON'
+        aicheck = 'NON'
         if self.correct:
             correct = 'OUI'
         if self.hints:
             hints = 'OUI'
+        if self.aicheck:
+            aicheck = 'OUI'
         return {
             'date': self.date,
             'correct': correct,
             'hints': hints,
+            'aicheck':aicheck,
+            'timer':self.timer
         }
 
     def save(self, *args, **kwargs):
@@ -108,11 +121,6 @@ class Test(models.Model):
 
 
 class QuizzMode(models.Model):
-    name = models.CharField(max_length = 255,default="")
-    def __str__(self):
-        return self.name
-
-class TimerMode(models.Model):
     name = models.CharField(max_length = 255,default="")
     def __str__(self):
         return self.name
@@ -131,6 +139,8 @@ class Quizz(models.Model):
     #timer_active = models.BooleanField(default=False)
     timer_task_id = models.CharField(max_length=255, null=True, blank=True)  # Stocke l'ID de la tâche Celery
     timeout = models.BooleanField(default=False)
+    aicheck = models.BooleanField(default=False)
+
 
     def __str__(self):
         return self.name + str(self.id)

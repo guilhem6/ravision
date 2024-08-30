@@ -57,6 +57,7 @@ def subjects(request):
     subjects = Subject.objects.filter(user=user)
     addForm = SubjectUpdateForm()
     tests = Test.objects.filter(user=user)
+    
     chart = get_custom_scores(tests, request)
     
     if filterForm.is_valid():
@@ -181,14 +182,27 @@ def question(request,id):
           _('Last update'):question.last_change_date}
     info, chart = get_info_chart(request,info,tests)
     tests = paginate_tests(request,tests)
-    fields = {'date':_('Date'),'correct':_('Success'),'hints':_('Hints')}
+    fields = {'date':_('Date'),'correct':_('Success'),'hints':_('Hints'),'aicheck':_('AI check'),'timer':_('Timer')}
     action = 'question'
     context = prepare_render_context(action, children=tests, request=request, fields=fields, object=question, childurl='test', deleteurl='delete_question', updateForm=updateForm, sort_by='date', parenturl='lecture', parent=question.lecture, chart=chart,info=info)
     return update_page(request,chart,action,context)
 
 def test(request,id):
     test = get_object_or_404(Test,pk=id)
-    context = prepare_render_context('test', request=request, object=test, parenturl='question', parent=test.question, gameurl=None)
+    info = {_('User'):test.question.lecture.subject.user,
+          _('Subject'):test.question.lecture.subject,
+          _('Lecture'):test.question.lecture,
+          _('Question'):test.question.question,
+          _('Correct'):test.correct,
+          _('Expected answer'):test.expected_answer,
+          _('Given answer'):test.given_answer,
+          _('Hints'):test.hints,
+          _('Timer'):test.timer.name,
+          _('AI check'):test.aicheck,
+          _('Date'):test.date
+          }
+    context = prepare_render_context('test', request=request, object=test, parenturl='question', parent=test.question, gameurl=None, info=info)
+
     return render(request, 'quizz/test.html', context)
 
 def delete_subject(request, id):
@@ -254,15 +268,26 @@ def game(request, id):
         user_answer = simplify(request.POST.get('answer'))
         correct_answer = simplify(quizz.current_question.answer)
         is_correct = False
+        print('hello')
 
         #si le temps n'a été écoulé
         if not quizz.timeout or quizz.timer.name=="No timer":
+            print('hello2 ')
             is_correct = user_answer == correct_answer
-            #quizz.timer_task_id = None  # Réinitialiser l'ID de la tâche
-            #quizz.timeout = False
-            #quizz.save()
+            if not is_correct and quizz.aicheck:
+                print('hello3 ')
+                openai_prompt = f"The question is: '{quizz.current_question.question}.\nThe given answer is '{quizz.current_question.answer}'.\nIs the following question also valid ?\n{request.POST.get('answer')}\n\nAnswer yes or no"
+                chat_completion = client.chat.completions.create(
+                messages=[{"role": "user","content": openai_prompt,}],
+                model="gpt-3.5-turbo",
+            )
 
-         # Réinitialiser l'ID de la tâche
+            # Traitement de la réponse de l'API pour obtenir les questions
+                generated_text = chat_completion.choices[0].message.content
+                print(generated_text)
+                if simplify(generated_text[0]) == 'y':
+                    is_correct = True
+        #Réinitialiser l'ID de la tâche
         quizz.save()
 
         Test.objects.create(
@@ -271,7 +296,9 @@ def game(request, id):
             question=quizz.current_question,
             hints=quizz.hints,
             expected_answer = quizz.current_question.answer,
-            given_answer = user_answer
+            given_answer = request.POST.get('answer'),
+            aicheck = quizz.aicheck,
+            timer = quizz.timer
         ).save()
 
         if quizz.timeout:
@@ -359,6 +386,7 @@ def game_start(request,quizz_type,id=0):
             hints = cleaned_data['hints']
             max_questions = cleaned_data['max_questions']
             selected_timer = cleaned_data['timer']
+            aicheck=cleaned_data['aicheck']
 
             if quizz_type == 'subjects' :
                 questions = Question.objects.all().order_by('?')[:max_questions]
@@ -370,7 +398,7 @@ def game_start(request,quizz_type,id=0):
                 questions = Question.objects.filter(id=selected_question.id)
 
             # Créer le quizz sans les questions
-            quizz = Quizz.objects.create(name=quizz_name, mode=selected_mode, hints=hints, user=request.user, creation_date = timezone.now(), timer=selected_timer)
+            quizz = Quizz.objects.create(name=quizz_name, mode=selected_mode, hints=hints, user=request.user, creation_date = timezone.now(), timer=selected_timer,aicheck=aicheck)
 
             # Associer les questions au quizz
             quizz.questions.set(questions)
@@ -411,6 +439,7 @@ def quizz(request,id):
             _('Mode'):quizz.mode.name,
             _('Timer mode'):quizz.timer.name,
             _('Hints'):quizz.hints,
+            _('AI check'):quizz.aicheck,
             _('Creation date'):quizz.creation_date,
             _('Last update'):quizz.last_change_date
             }
@@ -513,7 +542,7 @@ def generate_questions(request, lecture_id):
     
 @login_required
 @csrf_exempt
-def generate(request):
+def generate(request,lecture_id):
     if request.method == 'POST':
         form = QuestionGenerationForm(request.POST)
         if form.is_valid():
@@ -521,25 +550,25 @@ def generate(request):
             difficulty = form.cleaned_data['difficulty']
             prompt = form.cleaned_data['prompt']
             size_answers = form.cleaned_data['size_answers']
-
+            using_content = form.cleaned_data['using_content']
             # Appel à l'API OpenAI pour générer des questions
-            openai_prompt = f"Générer {num_questions} questions-réponses sur le thème de {prompt}, avec des réponses de maximum {size_answers} caractères.{prompt}\nNiveau de difficulté : {difficulty}\nSous la forme suivante :\nQ: ...\nA: ..."
-            
+            openai_prompt = _("Générer") + f" {num_questions} " + _("questions-réponses ")
+            if prompt!="" :
+                openai_prompt += _("sur le thème de") + f" {prompt}, "
+            openai_prompt += _("avec des réponses de maximum") + f" {size_answers} " + _("caractères.") + "\n" + _("Niveau de difficulté") + f" : {difficulty}\n" + _("Sous la forme suivante :") + "\nQ: ...\nA: ..."
+            if using_content:
+                lect = get_object_or_404(Lecture, pk=lecture_id)
+                openai_prompt += f"\n\nUtilise le texte suivant pour les questions :\n{lect.content}"
             chat_completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "user",
-                        "content": openai_prompt,
-                    }
-                ],
+                messages=[{"role": "user","content": openai_prompt,}],
                 model="gpt-3.5-turbo",
             )
 
             # Traitement de la réponse de l'API pour obtenir les questions
             generated_text = chat_completion.choices[0].message.content
-            print(generated_text)
+            #print(generated_text)
             questions_and_answers = parse_questions(generated_text)
-            print(questions_and_answers)
+            #print(questions_and_answers)
 
             return render(request, 'quizz/generated_questions.html', {
                 'form': form,
@@ -547,6 +576,32 @@ def generate(request):
                 'lecture': lecture
             })
     return render(request, 'quizz/error.html')
+
+def generate_content(request,lecture_id):
+    try:
+        lect = get_object_or_404(Lecture, pk=lecture_id)
+        openai_prompt = _("Génère un cours de 1000 caractères maximum sur ") + f"{lect.subject.name} : {lect.name}"
+        chat_completion = client.chat.completions.create(
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": openai_prompt,
+                        }
+                    ],
+                    model="gpt-3.5-turbo",
+                )
+
+        # Traitement de la réponse de l'API pour obtenir les questions
+        generated_text = chat_completion.choices[0].message.content
+        print(generated_text)
+        lect.content = generated_text
+        lect.save()
+        # Renvoie de la réponse sous forme de JSON
+        return JsonResponse({'status': 'success', 'content': generated_text})
+
+    except Exception as e:
+        # En cas d'erreur, renvoie une réponse d'erreur
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 def parse_questions(generated_text):
     """
@@ -576,8 +631,9 @@ def add_question(request):
                 question=question_text,
                 answer=answer_text,
                 lecture=lecture,
-                user=request.user
-            )
+                user=request.user,
+                creation_date = timezone.now()
+            ).save()
             return JsonResponse({'status': 'success', 'message': 'Question added', 'question_id': question.id})
         except Lecture.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Lecture not found'}, status=404)
@@ -601,8 +657,9 @@ def add_all_questions(request):
                     question=question_text,
                     answer=answer_text,
                     lecture=lecture,
-                    user=request.user
-                )
+                    user=request.user,
+                     creation_date = timezone.now()
+                ).save()
 
             return JsonResponse({'status': 'success', 'message': 'All questions added'})
         except Lecture.DoesNotExist:
