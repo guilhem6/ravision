@@ -3,9 +3,25 @@
 
 {% block content %}
 <h2><i class="bi bi-box-arrow-in-right"></i> {%trans "Sign in"%}</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">{%trans "Log-in"%}</button>
-</form>
+
+<table class="table">
+    <tbody>
+        <form method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+            <tr>
+                <th>
+                    {{ field.label_tag }}</th>
+                <td>{{ field }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th></th>
+                <td>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-box-arrow-in-right"></i>{%trans "Log-in"%}</button>
+                </td>
+            </tr>
+        </form>
+    </tbody>
+</table>
 {% endblock %}

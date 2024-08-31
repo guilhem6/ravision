@@ -2,10 +2,56 @@
 {% load i18n %}
 
 {% block content %}
+
+
 <h2><i class="bi bi-person-plus"></i> {%trans "Sign up"%}</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">{%trans "Create an account"%}</button>
-</form>
+<table class="table">
+    <tbody>
+        <form method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+            <tr>
+                <th>
+                    {{ field.label_tag }}</th>
+                <td>{{ field }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <th></th>
+                <td>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus"></i>{%trans "Create an account"%}</button>
+                </td>
+            </tr>
+        </form>
+    </tbody>
+</table>
+{% load i18n %}
+<div class="accordion" id="filterAccordion1">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="filterHeading1">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse1" aria-expanded="true" aria-controls="filterCollapse1">
+                <i class="bi bi-info-circle"></i>&nbsp;{% trans "Information" %}
+            </button>
+        </h2>
+        <div id="filterCollapse1" class="accordion-collapse collapse" aria-labelledby="filterHeading1" data-bs-parent="#filterAccordion1">
+            <div class="accordion-body">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Username</th>
+                            <td>Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</td>
+                        </tr>
+                        <tr>
+                            <th>Password</th>
+                            <td>can’t be too similar to your other personal information.<br/>
+                                must contain at least 8 characters.<br/>
+                                can’t be a commonly used password.<br/>
+                                can’t be entirely numeric.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
