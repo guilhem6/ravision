@@ -53,6 +53,10 @@ def catalogue(request):
 
 def subjects(request):
     user = request.user
+
+    if user.is_anonymous:
+        return redirect('login')
+    
     filterForm = SubjectFilterForm(request.GET)
     subjects = Subject.objects.filter(user=user)
     addForm = SubjectUpdateForm()
@@ -82,16 +86,23 @@ def subjects(request):
     
 def subject(request, id):
     user = request.user
+
+    if user.is_anonymous:
+        return redirect('login')
+    
     filterForm = LectureFilterForm(request.GET)
     subject = get_object_or_404(Subject, pk=id)
+
+    # Vérifier les conditions d'accès
+    if subject.private and user != subject.user:
+        return forbidden_request()
+    
     lectures = Lecture.objects.filter(subject_id=id)
     updateForm = SubjectUpdateForm(instance=subject)
     addForm = LectureUpdateForm()
 
     questions = Question.objects.filter(lecture__in=lectures)
     tests = Test.objects.filter(question__in=questions)
-    user_tests = tests.filter(user=user)
-    chart = get_custom_scores(user_tests, request)
 
     if filterForm.is_valid():
         lectures = filterForm.filter_queryset(lectures)
@@ -110,7 +121,8 @@ def subject(request, id):
                 name = addForm.cleaned_data['name']
                 Lecture.objects.create(name=name, subject=subject,creation_date = timezone.now()).save()
                 message_added(request,name,'Le nouveau chapitre')
-    info = {_('Subject'):subject,
+    info = {_('User'):user,
+            _('Subject'):subject,
             _('Amount of lectures'):lectures.count(),
             _('Amount of questions'):questions.count(),
             _('Creation date'):subject.creation_date,
@@ -124,8 +136,18 @@ def subject(request, id):
     return update_page(request,chart,action,context)
 
 def lecture(request,id):
+    user = request.user
     filterForm = QuestionFilterForm(request.GET)
     lecture = get_object_or_404(Lecture, pk=id)
+
+    if user.is_anonymous:
+        return redirect('login')
+
+    # Vérifier les conditions d'accès
+    subject = lecture.subject
+    if subject.private and user != subject.user:
+        return forbidden_request()
+    
     questions = Question.objects.filter(lecture_id=id)
     updateForm = LectureUpdateForm(instance=lecture)
     addForm = QuestionUpdateForm()
@@ -149,11 +171,12 @@ def lecture(request,id):
 
     if filterForm.is_valid():
         questions = filterForm.filter_queryset(questions)
-    info={_('Subject'):lecture.subject,
-        _('Lecture'):lecture,
-        _('Amount of questions'):questions.count(),
-        _('Creation date'):lecture.creation_date,
-        _('Last update'):lecture.last_change_date}
+    info={_('User'):user,
+          _('Subject'):lecture.subject,
+          _('Lecture'):lecture,
+          _('Amount of questions'):questions.count(),
+          _('Creation date'):lecture.creation_date,
+          _('Last update'):lecture.last_change_date}
     info, chart = get_info_chart(request,info,tests)
     questions = paginate_questions(request,questions)
     fields = {'question':'Question','answer':'Réponse'}
@@ -163,8 +186,18 @@ def lecture(request,id):
     return update_page(request,chart,action,context)
 
 def question(request,id):
+    user = request.user
     question = get_object_or_404(Question, pk=id)
     tests = Test.objects.filter(question_id=id)
+
+    if user.is_anonymous:
+        return redirect('login')
+
+    # Vérifier les conditions d'accès
+    subject = question.lecture.subject
+    if subject.private and user != subject.user:
+        return forbidden_request()
+    
     updateForm = QuestionUpdateForm(instance=question)
     if request.method == 'POST':
         if request.POST['action'] == 'update':
@@ -174,7 +207,8 @@ def question(request,id):
                 question.answer = updateForm.cleaned_data['answer']
                 question.save()
                 message_modification(request,question.question)
-    info={_('Subject'):question.lecture.subject,
+    info={_('User'):user,
+          _('Subject'):question.lecture.subject,
           _('Lecture'):question.lecture,
           _('Question'):question.question,
           _('Answer'):question.answer,
@@ -189,7 +223,17 @@ def question(request,id):
 
 def test(request,id):
     test = get_object_or_404(Test,pk=id)
-    info = {_('User'):test.question.lecture.subject.user,
+
+    # Vérifier les conditions d'accès
+    subject = test.question.lecture.subject
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if subject.private and user != subject.user:
+        return forbidden_request()
+    
+
+    info = {_('User'):user,
           _('Subject'):test.question.lecture.subject,
           _('Lecture'):test.question.lecture,
           _('Question'):test.question.question,
@@ -207,34 +251,66 @@ def test(request,id):
 
 def delete_subject(request, id):
     subject = get_object_or_404(Subject, id=id)
+
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if subject.private and user != subject.user:
+        return forbidden_request()
+    
     delete_object(request,subject)
     return redirect('subjects')
 
 def delete_lecture(request, id):
     lecture = get_object_or_404(Lecture, id=id)
+
+    subject = lecture.subject
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if subject.private and user != subject.user:
+        return forbidden_request()
+    
     delete_object(request,lecture)
     return redirect('subject', id=lecture.subject.id)
 
 def delete_question(request, id):
     question = get_object_or_404(Question, id=id)
+
+    subject = question.lecture.subject
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if subject.private and user != subject.user:
+        return forbidden_request()
+    
     delete_object(request, question)
     return redirect('lecture', id=question.lecture.id)
 
 def delete_test(request, id):
     test = get_object_or_404(Test, id=id)
+
+    subject = test.question.lecture.subject
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if subject.private and user != subject.user:
+        return forbidden_request()
+    
     delete_object(request, test)
     return redirect('question', test.question.id)
 
 def delete_quizz(request, id):
     quizz = get_object_or_404(Quizz, id=id)
+
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if user != quizz.user:
+        return forbidden_request()
+    
     delete_object(request, quizz)
     return redirect('quizzes')
-
-def delete_object(request, object):
-    if request.method == 'POST':
-        object.delete()
-        messages.success(request, _('The element has been successfully removed'))
-    return None
 
 def import_excel(request):
     task_id = None
@@ -255,6 +331,12 @@ def import_excel(request):
 def game(request, id):
     quizz = get_object_or_404(Quizz, pk=id)
     
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if user != quizz.user:
+        return forbidden_request()
+
     # Vérifier s'il y a des questions restantes
     if quizz.questions.exists():
         if not quizz.current_question:
@@ -361,22 +443,32 @@ def game_end(request):
 
 def game_start(request,quizz_type,id=0):
     title = 'error'
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
     if quizz_type == 'subjects' :
         title = _('Tout')
-        total_size = Question.objects.all().count()
+        total_size = Question.objects.filter(lecture__subject__user=user).count()
     elif quizz_type == 'subject' :
         selected_subject = get_object_or_404(Subject,pk=id)
+        if user != selected_subject.user:
+            return forbidden_request()
         title = selected_subject.name
-        total_size = Question.objects.filter(lecture__subject=selected_subject).count()
+        total_size = Question.objects.filter(lecture__subject=selected_subject,lecture__subject__user=user).count()
     elif quizz_type == 'lecture' :
         selected_lecture = get_object_or_404(Lecture,pk=id)
+        if user != selected_lecture.subject.user:
+            return forbidden_request()
         title = selected_lecture.name
-        total_size = Question.objects.filter(lecture=selected_lecture).count()
+        total_size = Question.objects.filter(lecture=selected_lecture,lecture__subject__user=user).count()
     elif quizz_type == 'question' :
         selected_question = get_object_or_404(Question,pk=id)
+        if user != selected_question.lecture.subject.user:
+            return forbidden_request()
         title = selected_question.question
         total_size = 1
-    
+    else :
+        return forbidden_request()
     if request.method == 'POST':
         form = CreateQuizzForm(request.POST)
         if form.is_valid():
@@ -413,8 +505,11 @@ def game_start(request,quizz_type,id=0):
     return render(request, 'quizz/game_start.html',{'form':form, 'quizz_type':quizz_type, 'object_id':id, 'title': title})
 
 def quizzes(request):
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
     filterForm = QuizzFilterForm(request.GET)
-    quizzes = Quizz.objects.all()
+    quizzes = Quizz.objects.filter(user=user)
     if filterForm.is_valid():
         quizzes = filterForm.filter_queryset(quizzes)
     quizzes = paginate_queryset(quizzes.order_by(f"{'-' if request.GET.get('order', 'asc') == 'desc' else ''}{request.GET.get('sort_by', 'name')}"), request, getChildrenPerPage(request))
@@ -424,6 +519,11 @@ def quizzes(request):
 
 def quizz(request,id):
     quizz = get_object_or_404(Quizz, pk=id)
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if user != quizz.user:
+        return forbidden_request()
     updateForm = QuizzUpdateForm(instance=quizz)
     if request.method == 'POST':
         if request.POST['action'] == 'update':
@@ -447,6 +547,8 @@ def quizz(request,id):
     return render(request, 'quizz/quizz.html', context)
 
 def register(request):
+    if not request.user.is_anonymous:
+        logout(request)
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
@@ -459,6 +561,8 @@ def register(request):
     return render(request, 'quizz/register.html', {'form': form})
 
 def user_login(request):
+    if not request.user.is_anonymous:
+        logout(request)
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -478,6 +582,8 @@ def user_logout(request):
 
 def user_account(request):
     user = request.user
+    if user.is_anonymous:
+        return redirect('login')
     if request.method == 'POST':
         action = request.POST.get('action')
         
@@ -502,7 +608,11 @@ def user_account(request):
 def download_excel(request, id):
     # Récupérer le sujet correspondant
     subject = Subject.objects.get(id=id)
-    
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if user != subject.user:
+        return forbidden_request()
     # Créer un objet Excel
     output = BytesIO()
     writer = pd.ExcelWriter(output, engine='xlsxwriter')
@@ -535,6 +645,11 @@ def download_excel(request, id):
 
 def generate_questions(request, lecture_id):
     lecture = get_object_or_404(Lecture, pk=lecture_id)
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if user != lecture.subject.user:
+        return forbidden_request()
     default_prompt = f"{lecture.subject.name} - {lecture.name}."
     form = QuestionGenerationForm(initial={'prompt': default_prompt})
     return render(request, 'quizz/generate_questions.html', {'form': form, 'lecture': lecture})
@@ -543,6 +658,12 @@ def generate_questions(request, lecture_id):
 @login_required
 @csrf_exempt
 def generate(request,lecture_id):
+    lect = get_object_or_404(Lecture, pk=lecture_id)
+    user = request.user
+    if user.is_anonymous:
+        return redirect('login')
+    if user != lect.subject.user:
+        return forbidden_request()
     if request.method == 'POST':
         form = QuestionGenerationForm(request.POST)
         if form.is_valid():
@@ -557,7 +678,6 @@ def generate(request,lecture_id):
                 openai_prompt += _("sur le thème de") + f" {prompt}, "
             openai_prompt += _("avec des réponses de maximum") + f" {size_answers} " + _("caractères.") + "\n" + _("Niveau de difficulté") + f" : {difficulty}\n" + _("Sous la forme suivante :") + "\nQ: ...\nA: ..."
             if using_content:
-                lect = get_object_or_404(Lecture, pk=lecture_id)
                 openai_prompt += f"\n\nUtilise le texte suivant pour les questions :\n{lect.content}"
             chat_completion = client.chat.completions.create(
                 messages=[{"role": "user","content": openai_prompt,}],
@@ -580,6 +700,11 @@ def generate(request,lecture_id):
 def generate_content(request,lecture_id):
     try:
         lect = get_object_or_404(Lecture, pk=lecture_id)
+        user = request.user
+        if user.is_anonymous:
+            return redirect('login')
+        if user != lect.subject.user:
+            return forbidden_request()
         openai_prompt = _("Génère un cours de 1000 caractères maximum sur ") + f"{lect.subject.name} : {lect.name}"
         chat_completion = client.chat.completions.create(
                     messages=[
@@ -603,23 +728,12 @@ def generate_content(request,lecture_id):
         # En cas d'erreur, renvoie une réponse d'erreur
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-def parse_questions(generated_text):
-    """
-    Fonction pour analyser le texte généré par l'API OpenAI et extraire les questions et réponses.
-    """
-    questions = []
-    for line in generated_text.split("\n"):
-        if line.startswith("Q:"):
-            question_text = line[2:].strip()
-            questions.append({'question': question_text, 'answer': ''})
-        elif line.startswith("A:") and questions:
-            answer_text = line[2:].strip()
-            questions[-1]['answer'] = answer_text
-    return questions
-
 @login_required
 @csrf_exempt
 def add_question(request):
+    user = request.user
+    if user.is_anonymous:
+            return redirect('login')
     if request.method == 'POST':
         question_text = request.POST.get('question')
         answer_text = request.POST.get('answer')
@@ -627,6 +741,8 @@ def add_question(request):
 
         try:
             lecture = Lecture.objects.get(id=lecture_id)
+            if user != lecture.subject.user:
+                return forbidden_request()
             question = Question.objects.create(
                 question=question_text,
                 answer=answer_text,
@@ -644,6 +760,9 @@ def add_question(request):
 @login_required
 @csrf_exempt
 def add_all_questions(request):
+    user = request.user
+    if user.is_anonymous:
+            return redirect('login')
     if request.method == 'POST':
         questions = request.POST.getlist('questions[]')
         lecture_id = request.POST.get('lecture_id')
@@ -651,6 +770,8 @@ def add_all_questions(request):
 
         try:
             lecture = Lecture.objects.get(id=lecture_id)
+            if user != lecture.subject.user:
+                return forbidden_request()
             for question_data in questions:
                 question_text, answer_text = question_data.split('||')
                 Question.objects.create(
@@ -670,7 +791,10 @@ def add_all_questions(request):
 
 
 def settings(request):
-    user_settings, created = UserSettings.objects.get_or_create(user=request.user)
+    user = request.user
+    if user.is_anonymous:
+            return redirect('login')
+    user_settings, created = UserSettings.objects.get_or_create(user=user)
 
     if request.method == 'POST':
         form = UserSettingsForm(request.POST, instance=user_settings)

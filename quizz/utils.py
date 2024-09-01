@@ -8,7 +8,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.utils.translation import gettext as _
 from matplotlib.ticker import MaxNLocator
-  
+from django.http import HttpResponseForbidden
+
 def get_graph():
     buffer = BytesIO()
     plt.savefig(buffer, format='png')
@@ -332,3 +333,25 @@ def get_info_chart(request,info,tests):
     info.update(all_test_count(tests,user_tests))
     return info, chart
 
+def forbidden_request():
+    return HttpResponseForbidden("Vous n'avez pas la permission d'accéder à cette page.")
+
+def delete_object(request, object):
+    if request.method == 'POST':
+        object.delete()
+        messages.success(request, _('The element has been successfully removed'))
+    return None
+
+def parse_questions(generated_text):
+    """
+    Fonction pour analyser le texte généré par l'API OpenAI et extraire les questions et réponses.
+    """
+    questions = []
+    for line in generated_text.split("\n"):
+        if line.startswith("Q:"):
+            question_text = line[2:].strip()
+            questions.append({'question': question_text, 'answer': ''})
+        elif line.startswith("A:") and questions:
+            answer_text = line[2:].strip()
+            questions[-1]['answer'] = answer_text
+    return questions
